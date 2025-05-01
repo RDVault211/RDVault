@@ -42,3 +42,8 @@ button {
   list-style: none;
   padding: 0;
 }
+#total-price {
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
