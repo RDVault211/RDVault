@@ -1,49 +1,59 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 1rem;
-  background: #f4f4f9;
+  padding: 20px;
 }
-.title {
+
+.centered {
   text-align: center;
-  font-size: 2rem;
-  margin-bottom: 1rem;
 }
-section {
-  background: #fff;
-  margin: 1rem 0;
-  padding: 1rem;
-  border-radius: 4px;
+
+header {
+  margin-bottom: 20px;
 }
-.hidden { display: none; }
-input, select, button {
+
+.form-section {
+  margin-bottom: 30px;
+}
+
+form label {
+  display: block;
+  margin: 5px 0;
+}
+
+form input,
+form select {
   width: 100%;
-  margin: 0.5rem 0;
-  padding: 0.5rem;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
+
 button {
-  background: #333;
-  color: #fff;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
   border: none;
+  border-radius: 5px;
   cursor: pointer;
 }
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+
+button:hover {
+  background-color: #0056b3;
 }
-.product-item, .admin-item {
-  background: #fafafa;
-  padding: 0.5rem;
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table, th, td {
   border: 1px solid #ddd;
-  border-radius: 4px;
 }
-.order-list {
-  list-style: none;
-  padding: 0;
+
+th, td {
+  padding: 10px;
+  text-align: left;
 }
-#total-price {
-  font-weight: bold;
-  margin-top: 0.5rem;
-}
+
 
