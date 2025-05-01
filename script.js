@@ -1,8 +1,6 @@
-// script.js
-
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-// Supabase initialization
+// Supabase init
 const SUPABASE_URL = 'https://uegbyvcdwxnbdohvtmqi.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlZ2J5dmNkd3huYmRvaHZ0bXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjgyMjYsImV4cCI6MjA2MTY0NDIyNn0.o8-Qi4mRQmZBGgVq0Aw7d2dB0qqO9uQBZfZCRuxmUys';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -20,21 +18,21 @@ const buyerInput      = document.getElementById('buyer_name');
 const payMethodSelect = document.getElementById('payment_method');
 const secretInput     = document.getElementById('secret');
 
-// Admin elements
-const loginBtn     = document.getElementById('login-btn');
-const logoutBtn    = document.getElementById('logout-btn');
-const logout2Btn   = document.getElementById('logout2-btn');
-const authSection  = document.getElementById('auth-section');
-const adminPanel   = document.getElementById('admin-panel');
-const newName      = document.getElementById('new-name');
-const newPrice     = document.getElementById('new-price');
-const newCategory  = document.getElementById('new-category');
-const addProdBtn   = document.getElementById('add-product-btn');
-const adminProducts= document.getElementById('admin-products');
-const ordersCash   = document.getElementById('orders-cash');
-const ordersTransfer = document.getElementById('orders-transfer');
+// Admin DOM
+const loginBtn      = document.getElementById('login-btn');
+const logoutBtn     = document.getElementById('logout-btn');
+const logout2Btn    = document.getElementById('logout2-btn');
+const authSection   = document.getElementById('auth-section');
+const adminPanel    = document.getElementById('admin-panel');
+const newName       = document.getElementById('new-name');
+const newPrice      = document.getElementById('new-price');
+const newCategory   = document.getElementById('new-category');
+const addProdBtn    = document.getElementById('add-product-btn');
+const adminProducts = document.getElementById('admin-products');
+const ordersCash    = document.getElementById('orders-cash');
+const ordersTrans   = document.getElementById('orders-transfer');
 
-// Authenticate admin
+// Admin login/logout
 loginBtn.onclick = async () => {
   const email = document.getElementById('email').value;
   const pass  = document.getElementById('password').value;
@@ -42,21 +40,17 @@ loginBtn.onclick = async () => {
   if (error) return alert('Login gagal: ' + error.message);
   authSection.classList.add('hidden');
   adminPanel.classList.remove('hidden');
-  init();
+  initAdmin();
 };
 logoutBtn.onclick = logout2Btn.onclick = () => location.reload();
 
-// Initialize data & subscriptions
-async function init() {
+// Initialize admin data & realtime
+async function initAdmin() {
   await loadProducts();
   await loadOrders();
-
-  // Real-time product updates
   supabase.channel('products')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, _ => loadProducts())
     .subscribe();
-
-  // Real-time order notifications
   supabase.channel('orders')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
       const o = payload.new;
@@ -66,18 +60,17 @@ async function init() {
     .subscribe();
 }
 
-// Load products from DB
+// Load & render products
 async function loadProducts() {
-  const { data: products, error } = await supabase.from('products').select('*').order('category');
-  if (error) return console.error(error);
-  renderCategoryFilters(products);
+  const { data: products } = await supabase.from('products').select('*').order('category');
+  renderCategories(products);
   renderProductsList(products);
-  renderProductsSelect(products);
+  renderProductSelect(products);
 }
 
 // Render category dropdowns
-function renderCategoryFilters(products) {
-  const cats = Array.from(new Set(products.map(p => p.category)));
+function renderCategories(products) {
+  const cats = [...new Set(products.map(p => p.category))];
   categoryFilter.innerHTML = `<option value="all">Semua</option>`;
   orderCategory.innerHTML  = `<option value="" disabled selected>Pilih kategori...</option>`;
   cats.forEach(c => {
@@ -86,25 +79,22 @@ function renderCategoryFilters(products) {
   });
   categoryFilter.onchange = () => {
     const sel = categoryFilter.value;
-    renderProductsList(sel === 'all' ? products : products.filter(p => p.category === sel));
+    const filtered = sel==='all'? products: products.filter(p => p.category===sel);
+    renderProductsList(filtered);
   };
   orderCategory.onchange = () => {
     const sel = orderCategory.value;
-    const filtered = products.filter(p => p.category === sel);
+    const filtered = products.filter(p => p.category===sel);
     renderProductsList(filtered);
-    renderProductsSelect(filtered);
-    // Show server field only for Topup ML
-    if (sel === 'Topup ML') {
-      document.getElementById('label-server').classList.remove('hidden');
-      serverInput.classList.remove('hidden');
-    } else {
-      document.getElementById('label-server').classList.add('hidden');
-      serverInput.classList.add('hidden');
-    }
+    renderProductSelect(filtered);
+    // toggle Server ID field
+    const show = sel==='Topup ML';
+    document.getElementById('label-server').classList.toggle('hidden', !show);
+    serverInput.classList.toggle('hidden', !show);
   };
 }
 
-// Render product cards for display
+// Render product cards
 function renderProductsList(products) {
   productList.innerHTML = '';
   products.forEach(p => {
@@ -115,20 +105,20 @@ function renderProductsList(products) {
   });
 }
 
-// Render product select in order form
-function renderProductsSelect(products) {
+// Render select options for order
+function renderProductSelect(products) {
   productSelect.innerHTML = `<option value="" disabled selected>Pilih produk...</option>`;
   products.forEach(p => {
     const opt = document.createElement('option');
     opt.value = p.id; opt.text = p.name; opt.dataset.price = p.price;
-    productSelect.appendChild(opt);
+    productSelect.append(opt);
   });
   productSelect.onchange = () => {
     totalPriceEl.textContent = `Total: Rp ${productSelect.selectedOptions[0].dataset.price}`;
   };
 }
 
-// Handle order submission
+// Handle order submit
 orderForm.onsubmit = async e => {
   e.preventDefault();
   const prodOpt = productSelect.selectedOptions[0];
@@ -138,36 +128,35 @@ orderForm.onsubmit = async e => {
   const srvId   = serverInput.value.trim();
   const buyer   = buyerInput.value.trim();
   const secret  = secretInput.value.trim();
-  // validate
   if (!prodOpt) return alert('Pilih produk terlebih dahulu.');
-  if (!idGame && orderCategory.value!=='Topup ML') return alert('Masukkan ID Game.');
   if (orderCategory.value==='Topup ML' && !srvId) return alert('Masukkan Server ID.');
+  if (orderCategory.value!=='Topup ML' && !idGame) return alert('Masukkan ID Game.');
   if (method==='cash') {
     const { data: s } = await supabase.from('settings').select('value').eq('key','secret').single();
-    if (s.value !== secret) return alert('Kode rahasia salah!');
+    if (s.value!==secret) return alert('Kode rahasia salah!');
     await supabase.from('orders').insert([{
       category: orderCategory.value,
       product_name: prodOpt.text,
       buyer_name: buyer,
-      game_id: idGame,
-      server_id: srvId,
+      game_id: orderCategory.value==='Topup ML'? null: idGame,
+      server_id: orderCategory.value==='Topup ML'? srvId: null,
       payment_method: method
     }]);
     alert(`Pesanan berhasil! Total: Rp ${price}`);
   } else {
     const text = encodeURIComponent(
       `Halo, saya mau top-up.\nProduk: ${prodOpt.text}\nTotal: Rp ${price}\n` +
-      `${orderCategory.value==='Topup ML' ? 'Server ID: '+srvId : 'ID Game: '+idGame}`
+      `${orderCategory.value==='Topup ML'?'Server ID: '+srvId:'ID Game: '+idGame}`
     );
     window.location.href = `https://wa.me/6281335761181?text=${text}`;
   }
 };
 
-// Load orders for admin view
+// Load & render orders (admin)
 async function loadOrders() {
   const { data: orders } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
   ordersCash.innerHTML = '';
-  ordersTransfer.innerHTML = '';
+  ordersTrans.innerHTML = '';
   orders.forEach(o => {
     const li = document.createElement('li');
     const label = o.category==='Topup ML'
@@ -175,13 +164,9 @@ async function loadOrders() {
       : `ID Game: ${o.game_id}`;
     li.textContent = `${new Date(o.created_at).toLocaleString()} — ${label} — ${o.product_name}`;
     if (o.payment_method==='cash') ordersCash.appendChild(li);
-    else ordersTransfer.appendChild(li);
+    else ordersTrans.appendChild(li);
   });
 }
 
-// On page load: fetch products (for public view)
-window.onload = () => {
-  loadProducts();
-};
-
-
+// On load (public view)
+window.onload = () => loadProducts();
