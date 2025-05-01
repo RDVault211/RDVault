@@ -1,0 +1,44 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 1rem;
+  background: #f4f4f9;
+}
+.title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+section {
+  background: #fff;
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 4px;
+}
+.hidden { display: none; }
+input, select, button {
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+}
+button {
+  background: #333;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.product-item, .admin-item {
+  background: #fafafa;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.order-list {
+  list-style: none;
+  padding: 0;
+}

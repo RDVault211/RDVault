@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RDVault</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <h1 class="title">RDVault</h1>
+
+  <!-- Dashboard Pembeli -->
+  <section id="buyer-section">
+    <h2>Dashboard Pembeli</h2>
+    <input type="text" id="buyer-id-input" placeholder="Masukkan ID Game atau Server ID"/>
+    <button id="btn-view-orders">Lihat Pesanan Saya</button>
+    <ul id="buyer-orders-list" class="order-list"></ul>
+  </section>
+
+  <!-- Produk per Kategori -->
+  <section id="products-section">
+    <h2>Filter Produk</h2>
+    <label for="category-filter">Pilih Kategori:</label>
+    <select id="category-filter">
+      <option value="all">Semua</option>
+    </select>
+    <div id="product-list" class="grid"></div>
+  </section>
+
+  <!-- Form Pemesanan -->
+  <section id="order-section">
+    <h2>Pemesanan</h2>
+    <form id="order-form">
+      <label for="order-category">Kategori Produk</label>
+      <select id="order-category" required>
+        <option value="" disabled selected>Pilih kategori...</option>
+      </select>
+
+      <label for="product">Pilih Produk</label>
+      <select id="product" required>
+        <option value="" disabled selected>Pilih produk...</option>
+      </select>
+
+      <label for="id_game" id="label-id">ID Game</label>
+      <input type="text" id="id_game" required/>
+
+      <label for="server_id" id="label-server" class="hidden">Server ID</label>
+      <input type="text" id="server_id" class="hidden"/>
+
+      <label for="buyer_name">Nama Pembeli</label>
+      <input type="text" id="buyer_name" required/>
+
+      <label for="payment_method">Metode Pembayaran</label>
+      <select id="payment_method" required>
+        <option value="cash">Cash (Kode Rahasia)</option>
+        <option value="transfer">Transfer BCA</option>
+      </select>
+
+      <label for="secret">Kode Rahasia (jika Cash)</label>
+      <input type="text" id="secret"/>
+
+      <button type="submit">Pesan Sekarang</button>
+    </form>
+  </section>
+
+  <!-- Admin Panel -->
+  <section id="admin-section">
+    <h2>Admin Panel</h2>
+    <div id="auth-section">
+      <input type="email" id="email" placeholder="Email Admin"/><br/>
+      <input type="password" id="password" placeholder="Password"/><br/>
+      <button id="login-btn">Login</button>
+      <button id="logout-btn" class="hidden">Logout</button>
+    </div>
+    <div id="admin-panel" class="hidden">
+      <button id="logout2-btn">Logout</button>
+      <h3>Kelola Produk</h3>
+      <input type="text" id="new-name" placeholder="Nama Produk"/><br/>
+      <input type="number" id="new-price" placeholder="Harga"/><br/>
+      <select id="new-category">
+        <option value="Topup ML">Topup ML</option>
+        <option value="Topup FF">Topup FF</option>
+        <option value="Joki MLBB">Joki MLBB</option>
+      </select><br/>
+      <button id="add-product-btn">Tambah Produk</button>
+      <div id="admin-products" class="grid"></div>
+
+      <h3>Daftar Pesanan</h3>
+      <h4>Cash</h4><ul id="orders-cash" class="order-list"></ul>
+      <h4>Transfer</h4><ul id="orders-transfer" class="order-list"></ul>
+    </div>
+  </section>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
