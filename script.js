@@ -195,26 +195,60 @@ async function loadOrders() {
   });
 }
 
-// ————————— Buyer: Handle Pemesanan —————————
+// ——— Buyer: Handle Pemesanan ———
 orderForm.onsubmit = async e => {
   e.preventDefault();
   const prodOpt = productSelect.selectedOptions[0];
   if (!prodOpt) return alert('Pilih produk.');
-  // ... rest of order logic unchanged ...
+
+  const product_id = prodOpt.value;
+  const product = productsCache.find(p => p.id === product_id);
+  if (!product) return alert('Produk tidak ditemukan.');
+
+  const category = orderCategory.value;
+  const payment_method = payMethodSelect.value;
+  const buyer_name = buyerInput.value.trim();
+  const game_id = idInput.value.trim();
+  const server_id = serverInput.classList.contains('hidden') ? '' : serverInput.value.trim();
+  const secret = secretInput.value.trim();
+
+  if (!category || !buyer_name || !game_id || !payment_method) {
+    return alert('Isi semua data.');
+  }
+
+  if (payment_method === 'cash') {
+    const { data: setting, error: setError } = await supabase.from('settings').select('*').eq('key', 'secret').single();
+    if (setError) return alert('Gagal validasi kode rahasia.');
+    if (secret !== setting.value) return alert('Kode rahasia salah.');
+  }
+
+  const { error } = await supabase.from('orders').insert([{
+    category,
+    product_name: product.name,
+    payment_method,
+    buyer_name,
+    game_id,
+    server_id,
+  }]);
+
+  if (error) {
+    alert('Gagal menyimpan pesanan: ' + error.message);
+    return;
+  }
+
+  alert('Pesanan berhasil dikirim!');
+
+  if (payment_method === 'transfer') {
+    const pesan = `Halo admin, saya ingin melakukan pemesanan:\n\n` +
+      `Nama: ${buyer_name}\n` +
+      `Kategori: ${category}\n` +
+      `Produk: ${product.name}\n` +
+      `ID Game: ${game_id}${server_id ? `\nServer ID: ${server_id}` : ''}\n` +
+      `Metode: Transfer`;
+    const waLink = `https://wa.me/6281335761181?text=${encodeURIComponent(pesan)}`;
+    window.open(waLink, '_blank');
+  }
+
+  orderForm.reset();
+  totalPriceEl.textContent = 'Total: Rp 0';
 };
-
-// ————————— On Load —————————
-window.addEventListener('DOMContentLoaded', () => {
-  loadProducts();
-  subscribeProductChanges(); // name updated for clarity
-});
-
-// alias for subscription
-function subscribeProductChanges() {
-  supabase
-    .channel('products-channel')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-      loadProducts();
-    })
-    .subscribe();
-}
