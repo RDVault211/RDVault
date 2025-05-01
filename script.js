@@ -122,3 +122,107 @@ document.addEventListener('DOMContentLoaded', () => {
   loadProducts();
   subscribeProductChanges();
 });
+const secret = document.getElementById('secret').value;
+const { data: secretList } = await supabase.from('secrets').select('*');
+const isValid = secretList.some(s => s.code === secret);
+if (!isValid && payMethodSelect.value === 'cash') {
+  return alert('Kode rahasia salah.');
+}
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const supabase = createClient(
+  'https://uegbyvcdwxnbdohvtmqi.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlZ2J5dmNkd3huYmRvaHZ0bXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjgyMjYsImV4cCI6MjA2MTY0NDIyNn0.o8-Qi4mRQmZBGgVq0Aw7d2dB0qqO9uQBZfZCRuxmUys'
+);
+
+// DOM
+const loginBtn      = document.getElementById('login-btn');
+const logoutBtn     = document.getElementById('logout-btn');
+const authSection   = document.getElementById('auth-section');
+const adminPanel    = document.getElementById('admin-panel');
+const newName       = document.getElementById('new-name');
+const newPrice      = document.getElementById('new-price');
+const newCategory   = document.getElementById('new-category');
+const addProdBtn    = document.getElementById('add-product-btn');
+const adminProducts = document.getElementById('admin-products');
+const ordersCash    = document.getElementById('orders-cash');
+const ordersTrans   = document.getElementById('orders-transfer');
+
+// Login
+loginBtn.onclick = async () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return alert('Login gagal: ' + error.message);
+  authSection.classList.add('hidden');
+  adminPanel.classList.remove('hidden');
+  initAdmin();
+};
+
+logoutBtn.onclick = () => location.reload();
+
+// Init admin panel
+async function initAdmin() {
+  await loadProducts();
+  await loadOrders();
+
+  supabase
+    .channel('products-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, loadProducts)
+    .subscribe();
+
+  supabase
+    .channel('orders-realtime')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+      const o = payload.new;
+      alert(`Pesanan baru: ${o.buyer_name} - ${o.product_name}`);
+      loadOrders();
+    })
+    .subscribe();
+}
+
+// Load produk
+async function loadProducts() {
+  const { data } = await supabase.from('products').select('*').order('category');
+  adminProducts.innerHTML = '';
+  data.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'admin-item';
+    div.innerHTML = `${p.category} - <strong>${p.name}</strong> - Rp ${p.price}
+    <button data-id="${p.id}" class="del-btn">Hapus</button>`;
+    adminProducts.appendChild(div);
+  });
+  adminProducts.querySelectorAll('.del-btn').forEach(btn => {
+    btn.onclick = async () => {
+      await supabase.from('products').delete().eq('id', btn.dataset.id);
+    };
+  });
+}
+
+// Tambah produk
+addProdBtn.onclick = async () => {
+  const name = newName.value;
+  const price = parseInt(newPrice.value);
+  const category = newCategory.value;
+  if (!name || !price || !category) return alert('Isi semua data produk.');
+  await supabase.from('products').insert([{ name, price, category }]);
+  newName.value = '';
+  newPrice.value = '';
+  newCategory.value = '';
+};
+
+// Load pesanan
+async function loadOrders() {
+  const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+  ordersCash.innerHTML = '';
+  ordersTrans.innerHTML = '';
+  data.forEach(o => {
+    const li = document.createElement('li');
+    const detail = o.category === 'Topup ML'
+      ? `Server: ${o.server_id}`
+      : `ID: ${o.game_id}`;
+    li.textContent = `${o.created_at} - ${o.product_name} - ${detail}`;
+    if (o.payment_method === 'cash') ordersCash.appendChild(li);
+    else ordersTrans.appendChild(li);
+  });
+}
