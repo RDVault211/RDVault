@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel - RDVault</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Admin Panel</h1>
+    <div class="section">
+      <h2>Tambah Produk</h2>
+      <input type="text" id="category" placeholder="Kategori (contoh: Topup ML)" />
+      <input type="text" id="name" placeholder="Nama Produk" />
+      <input type="number" id="price" placeholder="Harga (Rupiah)" />
+      <button id="addProduct">Tambah Produk</button>
+    </div>
+    <div class="section">
+      <h2>Daftar Produk</h2>
+      <div id="productList"></div>
+    </div>
+    <div class="section">
+      <h2>Daftar Pesanan</h2>
+      <h3>Cash</h3>
+      <ul id="orderListCash"></ul>
+      <h3>Transfer</h3>
+      <ul id="orderListTransfer"></ul>
+    </div>
+  </div>
+  <script src="admin.js"></script>
+</body>
+</html>
