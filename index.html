@@ -9,15 +9,7 @@
 <body>
   <h1 class="title">RDVault</h1>
 
-  <!-- Dashboard Pembeli -->
-  <section id="buyer-section">
-    <h2>Dashboard Pembeli</h2>
-    <input type="text" id="buyer-id-input" placeholder="Masukkan ID Game atau Server ID"/>
-    <button id="btn-view-orders">Lihat Pesanan Saya</button>
-    <ul id="buyer-orders-list" class="order-list"></ul>
-  </section>
-
-  <!-- Produk per Kategori -->
+  <!-- Product Filter -->
   <section id="products-section">
     <h2>Filter Produk</h2>
     <label for="category-filter">Pilih Kategori:</label>
@@ -27,7 +19,7 @@
     <div id="product-list" class="grid"></div>
   </section>
 
-  <!-- Form Pemesanan -->
+  <!-- Order Form -->
   <section id="order-section">
     <h2>Pemesanan</h2>
     <form id="order-form">
@@ -40,6 +32,8 @@
       <select id="product" required>
         <option value="" disabled selected>Pilih produk...</option>
       </select>
+
+      <p id="total-price">Total: Rp 0</p>
 
       <label for="id_game" id="label-id">ID Game</label>
       <input type="text" id="id_game" required/>
