@@ -150,3 +150,36 @@ function renderOrders(orders) {
 window.onload = () => {
   fetchProducts();
 };
+
+// Buyer Order Lookup Functionality
+buyerBtn.onclick = async () => {
+  const idVal = buyerInput.value.trim();
+  if (!idVal) {
+    alert('Masukkan ID Game atau Server ID terlebih dahulu.');
+    return;
+  }
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .or(`game_id.eq.${idVal},server_id.eq.${idVal}`)
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('Error fetching orders:', error);
+    alert('Gagal mengambil data pesanan.');
+    return;
+  }
+  buyerList.innerHTML = '';
+  if (data.length === 0) {
+    buyerList.innerHTML = '<li>Tidak ada pesanan untuk ID tersebut.</li>';
+  } else {
+    data.forEach(o => {
+      const li = document.createElement('li');
+      const label = o.category === 'Topup ML'
+        ? `Server ID: ${o.server_id}`
+        : `ID Game: ${o.game_id}`;
+      li.textContent = `${new Date(o.created_at).toLocaleString()} - ${label} - ${o.product_name} - ${o.payment_method}`;
+      buyerList.appendChild(li);
+    });
+  }
+};
+
