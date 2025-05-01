@@ -1,6 +1,6 @@
 // script.js
 
-import { createClient } from 'https://uegbyvcdwxnbdohvtmqi.supabase.co';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 // --- Supabase Initialization ---
 const SUPABASE_URL = 'https://uegbyvcdwxnbdohvtmqi.supabase.co';
