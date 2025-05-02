@@ -126,7 +126,7 @@ function renderProductSelect(list) {
   const updateTotal = () => {
     const selected = productSelect.selectedOptions[0];
     const price = selected ? parseInt(selected.dataset.price) : 0;
-    const qty = parseInt(quantityInput.value*qty || '1');
+    const qty = parseInt(quantityInput.value || '1');
     const total = price * qty;
     totalPriceEl.textContent = total ? `Total: Rp ${total}` : '';
   };
