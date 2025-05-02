@@ -125,11 +125,6 @@ orderForm.onsubmit = async e => {
   }
 
   if (payment_method === 'cash') {
-    if (!secret) return alert('Masukkan kode rahasia.');
-    const { data: secrets, error: secretErr } = await supabase.from('secrets').select('*');
-    if (secretErr) return alert('Gagal mengecek kode rahasia.');
-    const valid = secrets.some(s => s.code === secret);
-    if (!valid) return alert('Kode rahasia salah.');
   }
 
   const { error } = await supabase.from('orders').insert([{
