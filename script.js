@@ -101,7 +101,7 @@ function renderProductsList(list) {
   list.forEach(p => {
     const div = document.createElement('div');
     div.className = 'product-item';
-    div.innerHTML = `<strong>${p.name}</strong><br>Rp ${p.price}<br><em>${p.category}</em>`;
+    div.innerHTML = `<strong>${p.name}</strong><br>Rp ${p.price* qty;}<br><em>${p.category}</em>`;
     productList.appendChild(div);
   });
 }
@@ -220,8 +220,13 @@ orderForm.onsubmit = async e => {
     const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
-
-  orderForm.reset();
-  totalPriceEl.textContent = '';
-};
+async function loadProducts() {
+  const { data, error } = await supabase.from('products').select('*').order('category');
+  console.log('Produk:', data); // tambahkan ini
+  if (error) {
+    console.error('Gagal load produk:', error);
+    return;
+  }
+  ...
+}
 
