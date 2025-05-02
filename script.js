@@ -164,9 +164,9 @@ async function loadOrders() {
   });
 }
 
-// Pemesanan
 orderForm.onsubmit = async e => {
   e.preventDefault();
+
   const prodOpt = productSelect.selectedOptions[0];
   if (!prodOpt) return alert('Pilih produk.');
 
@@ -179,8 +179,12 @@ orderForm.onsubmit = async e => {
   const payment_method = payMethodSelect.value;
   const secret = secretInput.value.trim();
   const category = orderCategory.value;
+  const quantityInput = document.getElementById('quantity');
+  const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
 
-  if (!buyer_name || !game_id || !product_id || !payment_method) return alert('Lengkapi semua data.');
+  if (!buyer_name || !game_id || !product_id || !payment_method || !category || isNaN(quantity) || quantity < 1) {
+    return alert('Lengkapi semua data dengan benar.');
+  }
 
   if (payment_method === 'cash') {
     const { data: secrets } = await supabase.from('secrets').select('*');
@@ -188,10 +192,13 @@ orderForm.onsubmit = async e => {
     if (!valid) return alert('Kode rahasia salah.');
   }
 
+  const totalPrice = price * quantity;
+
   const { error } = await supabase.from('orders').insert([{
     product_id,
     product_name,
-    price,
+    price: totalPrice,
+    quantity,
     game_id,
     server_id,
     buyer_name,
@@ -202,8 +209,11 @@ orderForm.onsubmit = async e => {
   if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
 
   alert('Pemesanan berhasil!');
-  if (payment_method === 'transfer') {
-    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
+
+  // Redirect ke WhatsApp jika kategori Joki MLBB atau metode transfer
+  if (category === 'Joki MLBB' || payment_method === 'transfer') {
+    const info = category === 'Topup ML' ? `Server ID: ${server_id}` : `ID: ${game_id}`;
+    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${quantity}x ${product_name} untuk ${info}`;
     const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
@@ -212,5 +222,3 @@ orderForm.onsubmit = async e => {
   totalPriceEl.textContent = '';
 };
 
-// Init
-window.addEventListener('DOMContentLoaded', loadProducts);
