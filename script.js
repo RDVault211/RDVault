@@ -18,6 +18,7 @@ const serverInput = document.getElementById('server_id');
 const buyerInput = document.getElementById('buyer_name');
 const payMethodSelect = document.getElementById('payment_method');
 const secretInput = document.getElementById('secret');
+const quantityInput = document.getElementById('quantity');
 
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
@@ -34,19 +35,20 @@ const ordersTrans = document.getElementById('orders-transfer');
 
 let productsCache = [];
 
-// Auth
-loginBtn.onclick = async () => {
+// Login & Logout
+loginBtn?.addEventListener('click', async () => {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return alert('Login gagal: ' + error.message);
-  authSection.classList.add('hidden');
-  adminPanel.classList.remove('hidden');
-  await initAdmin();
-};
-logoutBtn.onclick = logout2Btn.onclick = () => location.reload();
+  authSection?.classList.add('hidden');
+  adminPanel?.classList.remove('hidden');
+  initAdmin();
+});
+logoutBtn?.addEventListener('click', () => location.reload());
+logout2Btn?.addEventListener('click', () => location.reload());
 
-// Init Admin
+// Inisialisasi Admin
 async function initAdmin() {
   await loadProducts();
   await loadOrders();
@@ -64,7 +66,7 @@ async function initAdmin() {
     .subscribe();
 }
 
-// Load Products
+// Load Produk
 async function loadProducts() {
   const { data, error } = await supabase.from('products').select('*').order('category');
   if (error) return console.error(error);
@@ -76,6 +78,7 @@ async function loadProducts() {
 }
 
 function renderCategoryFilters() {
+  if (!categoryFilter || !orderCategory) return;
   const cats = ['all', ...new Set(productsCache.map(p => p.category))];
   categoryFilter.innerHTML = '';
   cats.forEach(c => categoryFilter.add(new Option(c === 'all' ? 'Semua' : c, c)));
@@ -91,39 +94,45 @@ function renderCategoryFilters() {
     const list = productsCache.filter(p => p.category === sel);
     renderProductsList(list);
     renderProductSelect(list);
-    document.getElementById('label-server').classList.toggle('hidden', sel !== 'Topup ML');
-    serverInput.classList.toggle('hidden', sel !== 'Topup ML');
+    document.getElementById('label-server')?.classList.toggle('hidden', sel !== 'Topup ML');
+    serverInput?.classList.toggle('hidden', sel !== 'Topup ML');
   };
 }
 
 function renderProductsList(list) {
+  if (!productList) return;
   productList.innerHTML = '';
   list.forEach(p => {
     const div = document.createElement('div');
     div.className = 'product-item';
-    div.innerHTML = `<strong>${p.name}</strong><br>Rp ${p.price* qty;}<br><em>${p.category}</em>`;
+    div.innerHTML = `<strong>${p.name}</strong><br>Rp ${p.price}<br><em>${p.category}</em>`;
     productList.appendChild(div);
   });
 }
 
-productSelect.onchange = updateTotalPrice;
-quantityInput.oninput = updateTotalPrice;
+function renderProductSelect(list) {
+  if (!productSelect || !quantityInput || !totalPriceEl) return;
+  productSelect.innerHTML = '<option disabled selected>Pilih produk...</option>';
+  list.forEach(p => {
+    const opt = new Option(p.name, p.id);
+    opt.dataset.price = p.price;
+    productSelect.appendChild(opt);
+  });
 
-function updateTotalPrice() {
-  const selected = productSelect.selectedOptions[0];
-  const price = selected?.dataset.price;
-  const qty = parseInt(quantityInput.value) || 1;
+  const updateTotal = () => {
+    const selected = productSelect.selectedOptions[0];
+    const price = selected ? parseInt(selected.dataset.price) : 0;
+    const qty = parseInt(quantityInput.value || '1');
+    const total = price * qty;
+    totalPriceEl.textContent = total ? `Total: Rp ${total}` : '';
+  };
 
-  if (price) {
-    const total = parseInt(price) * qty;
-    totalPriceEl.textContent = `Total: Rp ${total}`;
-  } else {
-    totalPriceEl.textContent = '';
-  }
+  productSelect.onchange = updateTotal;
+  quantityInput.oninput = updateTotal;
 }
 
-// Admin Produk
 function renderAdminProductList(list) {
+  if (!adminProducts) return;
   adminProducts.innerHTML = '';
   list.forEach(p => {
     const div = document.createElement('div');
@@ -141,7 +150,7 @@ function renderAdminProductList(list) {
   });
 }
 
-addProdBtn.onclick = async () => {
+addProdBtn?.addEventListener('click', async () => {
   const name = newName.value.trim();
   const price = parseInt(newPrice.value, 10);
   const category = newCategory.value;
@@ -150,9 +159,9 @@ addProdBtn.onclick = async () => {
   if (error) return alert('Gagal tambah produk: ' + error.message);
   newName.value = '';
   newPrice.value = '';
-};
+});
 
-// Load Orders
+// Load Pesanan
 async function loadOrders() {
   const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
   if (error) return console.error(error);
@@ -167,7 +176,8 @@ async function loadOrders() {
   });
 }
 
-orderForm.onsubmit = async e => {
+// Submit Form Pemesanan
+orderForm?.addEventListener('submit', async e => {
   e.preventDefault();
 
   const prodOpt = productSelect.selectedOptions[0];
@@ -182,8 +192,7 @@ orderForm.onsubmit = async e => {
   const payment_method = payMethodSelect.value;
   const secret = secretInput.value.trim();
   const category = orderCategory.value;
-  const quantityInput = document.getElementById('quantity');
-  const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+  const quantity = parseInt(quantityInput.value || '1');
 
   if (!buyer_name || !game_id || !product_id || !payment_method || !category || isNaN(quantity) || quantity < 1) {
     return alert('Lengkapi semua data dengan benar.');
@@ -213,20 +222,14 @@ orderForm.onsubmit = async e => {
 
   alert('Pemesanan berhasil!');
 
-  // Redirect ke WhatsApp jika kategori Joki MLBB atau metode transfer
   if (category === 'Joki MLBB' || payment_method === 'transfer') {
     const info = category === 'Topup ML' ? `Server ID: ${server_id}` : `ID: ${game_id}`;
     const text = `Halo Admin, saya ${buyer_name} ingin memesan ${quantity}x ${product_name} untuk ${info}`;
     const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
-async function loadProducts() {
-  const { data, error } = await supabase.from('products').select('*').order('category');
-  console.log('Produk:', data); // tambahkan ini
-  if (error) {
-    console.error('Gagal load produk:', error);
-    return;
-  }
-  ...
-}
+
+  orderForm.reset();
+  totalPriceEl.textContent = '';
+});
 
