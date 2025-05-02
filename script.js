@@ -1,79 +1,98 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
+// Supabase Init
 const supabase = createClient(
   'https://uegbyvcdwxnbdohvtmqi.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVlZ2J5dmNkd3huYmRvaHZ0bXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYwNjgyMjYsImV4cCI6MjA2MTY0NDIyNn0.o8-Qi4mRQmZBGgVq0Aw7d2dB0qqO9uQBZfZCRuxmUys'
 );
 
-// —————— Global Cache ——————
+// DOM Elements
+const categoryFilter = document.getElementById('category-filter');
+const orderCategory = document.getElementById('order-category');
+const productList = document.getElementById('product-list');
+const productSelect = document.getElementById('product');
+const totalPriceEl = document.getElementById('total-price');
+const orderForm = document.getElementById('order-form');
+const idInput = document.getElementById('id_game');
+const serverInput = document.getElementById('server_id');
+const buyerInput = document.getElementById('buyer_name');
+const payMethodSelect = document.getElementById('payment_method');
+const secretInput = document.getElementById('secret');
+
+const loginBtn = document.getElementById('login-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const logout2Btn = document.getElementById('logout2-btn');
+const authSection = document.getElementById('auth-section');
+const adminPanel = document.getElementById('admin-panel');
+const newName = document.getElementById('new-name');
+const newPrice = document.getElementById('new-price');
+const newCategory = document.getElementById('new-category');
+const addProdBtn = document.getElementById('add-product-btn');
+const adminProducts = document.getElementById('admin-products');
+const ordersCash = document.getElementById('orders-cash');
+const ordersTrans = document.getElementById('orders-transfer');
+
 let productsCache = [];
 
-// —————— DOM Elements ——————
-// Buyer
-const categoryFilter = document.getElementById('category-filter');
-const orderCategory  = document.getElementById('order-category');
-const productList    = document.getElementById('product-list');
-const productSelect  = document.getElementById('product');
-const totalPriceEl   = document.getElementById('total-price');
-const orderForm      = document.getElementById('order-form');
-const idInput        = document.getElementById('id_game');
-const serverInput    = document.getElementById('server_id');
-const buyerInput     = document.getElementById('buyer_name');
-const payMethodSelect= document.getElementById('payment_method');
-const secretInput    = document.getElementById('secret');
+// Auth
+loginBtn.onclick = async () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) return alert('Login gagal: ' + error.message);
+  authSection.classList.add('hidden');
+  adminPanel.classList.remove('hidden');
+  await initAdmin();
+};
+logoutBtn.onclick = logout2Btn.onclick = () => location.reload();
 
-// Admin
-const loginBtn       = document.getElementById('login-btn');
-const logoutBtn      = document.getElementById('logout-btn');
-const logout2Btn     = document.getElementById('logout2-btn');
-const authSection    = document.getElementById('auth-section');
-const adminPanel     = document.getElementById('admin-panel');
-const newName        = document.getElementById('new-name');
-const newPrice       = document.getElementById('new-price');
-const newCategory    = document.getElementById('new-category');
-const addProdBtn     = document.getElementById('add-product-btn');
-const adminProducts  = document.getElementById('admin-products');
-const ordersCash     = document.getElementById('orders-cash');
-const ordersTrans    = document.getElementById('orders-transfer');
+// Init Admin
+async function initAdmin() {
+  await loadProducts();
+  await loadOrders();
 
-// —————— Buyer Logic ——————
-window.addEventListener('DOMContentLoaded', () => {
-  loadProducts();
-  subscribeRealtime();
-});
+  supabase.channel('products')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, loadProducts)
+    .subscribe();
 
+  supabase.channel('orders')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
+      const o = payload.new;
+      alert(`📥 Pesanan baru dari ${o.buyer_name}: ${o.product_name}`);
+      loadOrders();
+    })
+    .subscribe();
+}
+
+// Load Products
 async function loadProducts() {
   const { data, error } = await supabase.from('products').select('*').order('category');
   if (error) return console.error(error);
   productsCache = data;
   renderCategoryFilters();
-  renderProductsList(data);
-  renderProductSelect(data);
-  renderAdminProductList(data);
+  renderProductsList(productsCache);
+  renderProductSelect(productsCache);
+  renderAdminProductList(productsCache);
 }
 
 function renderCategoryFilters() {
-  const categories = ['all', ...new Set(productsCache.map(p => p.category))];
+  const cats = ['all', ...new Set(productsCache.map(p => p.category))];
   categoryFilter.innerHTML = '';
-  categories.forEach(c => categoryFilter.add(new Option(c === 'all' ? 'Semua' : c, c)));
-
+  cats.forEach(c => categoryFilter.add(new Option(c === 'all' ? 'Semua' : c, c)));
   categoryFilter.onchange = () => {
-    const selected = categoryFilter.value;
-    const filtered = selected === 'all' ? productsCache : productsCache.filter(p => p.category === selected);
-    renderProductsList(filtered);
+    const sel = categoryFilter.value;
+    renderProductsList(sel === 'all' ? productsCache : productsCache.filter(p => p.category === sel));
   };
 
   orderCategory.innerHTML = '<option disabled selected>Pilih kategori...</option>';
-  categories.slice(1).forEach(c => orderCategory.add(new Option(c, c)));
-
+  cats.slice(1).forEach(c => orderCategory.add(new Option(c, c)));
   orderCategory.onchange = () => {
     const sel = orderCategory.value;
-    const filtered = productsCache.filter(p => p.category === sel);
-    renderProductsList(filtered);
-    renderProductSelect(filtered);
-    const isML = sel === 'Topup ML';
-    document.getElementById('label-server')?.classList.toggle('hidden', !isML);
-    serverInput?.classList.toggle('hidden', !isML);
+    const list = productsCache.filter(p => p.category === sel);
+    renderProductsList(list);
+    renderProductSelect(list);
+    document.getElementById('label-server').classList.toggle('hidden', sel !== 'Topup ML');
+    serverInput.classList.toggle('hidden', sel !== 'Topup ML');
   };
 }
 
@@ -92,104 +111,16 @@ function renderProductSelect(list) {
   list.forEach(p => {
     const opt = new Option(p.name, p.id);
     opt.dataset.price = p.price;
-    productSelect.append(opt);
+    productSelect.appendChild(opt);
   });
   productSelect.onchange = () => {
-    totalPriceEl.textContent = `Total: Rp ${productSelect.selectedOptions[0].dataset.price}`;
+    const harga = productSelect.selectedOptions[0]?.dataset.price;
+    totalPriceEl.textContent = harga ? `Total: Rp ${harga}` : '';
   };
 }
 
-// —————— Handle Pemesanan ——————
-orderForm.onsubmit = async e => {
-  e.preventDefault();
-
-  const prodOpt = productSelect.selectedOptions[0];
-  if (!prodOpt) return alert('Pilih produk.');
-
-  const product_id = prodOpt.value;
-  const product_name = prodOpt.text;
-  const price = parseInt(prodOpt.dataset.price);
-  const game_id = idInput.value.trim();
-  const server_id = serverInput.value.trim();
-  const buyer_name = buyerInput.value.trim();
-  const payment_method = payMethodSelect.value;
-  const secret = secretInput.value.trim();
-  const category = orderCategory.value;
-
-  if (!buyer_name || !game_id || !product_id || !payment_method || !category) {
-    return alert('Lengkapi semua data.');
-  }
-
-  if (category === 'Topup ML' && !server_id) {
-    return alert('Masukkan Server ID.');
-  }
-
-  if (payment_method === 'cash') {
-  }
-  if (!secret) return alert('Masukkan kode rahasia.');
-    const { data: secrets, error: secretErr } = await supabase.from('secrets').select('*');
-    if (secretErr) return alert('Gagal mengecek kode rahasia.');
-    const valid = secrets.some(s => s.code === secret);
-    if (!valid) return alert('Kode rahasia salah.');
-}
-
-  const { error } = await supabase.from('orders').insert([{
-    product_id,
-    product_name,
-    price,
-    game_id,
-    server_id,
-    buyer_name,
-    payment_method,
-    category
-  }]);
-
-  if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
-
-  if (payment_method === 'transfer') {
-    const pesan = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id}` +
-      (category === 'Topup ML' ? ` Server ID: ${server_id}` : '');
-    // Gunakan location.href agar aman di iOS
-    window.location.href = `https://wa.me/6281335761181?text=${encodeURIComponent(pesan)}`;
-    return;
-  }
-
-  alert('Pemesanan berhasil!');
-  orderForm.reset();
-  totalPriceEl.textContent = '';
-};
-
-
-// —————— Admin Login ——————
-loginBtn.onclick = async () => {
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return alert('Login gagal: ' + error.message);
-  authSection.classList.add('hidden');
-  adminPanel.classList.remove('hidden');
-  await loadProducts();
-  await loadOrders();
-};
-
-logoutBtn.onclick = logout2Btn.onclick = () => location.reload();
-
-// —————— Admin: Produk ——————
-addProdBtn.onclick = async () => {
-  const name = newName.value;
-  const price = parseInt(newPrice.value);
-  const category = newCategory.value;
-  if (!name || !price || !category) return alert('Isi semua field.');
-  const { error } = await supabase.from('products').insert([{ name, price, category }]);
-  if (error) return alert('Gagal menambah produk: ' + error.message);
-  newName.value = '';
-  newPrice.value = '';
-  newCategory.value = '';
-  await loadProducts();
-};
-
+// Admin Produk
 function renderAdminProductList(list) {
-  if (!adminProducts) return;
   adminProducts.innerHTML = '';
   list.forEach(p => {
     const div = document.createElement('div');
@@ -207,36 +138,79 @@ function renderAdminProductList(list) {
   });
 }
 
-// —————— Admin: Pesanan ——————
+addProdBtn.onclick = async () => {
+  const name = newName.value.trim();
+  const price = parseInt(newPrice.value, 10);
+  const category = newCategory.value;
+  if (!name || !price || !category) return alert('Isi semua data.');
+  const { error } = await supabase.from('products').insert([{ name, price, category }]);
+  if (error) return alert('Gagal tambah produk: ' + error.message);
+  newName.value = '';
+  newPrice.value = '';
+};
+
+// Load Orders
 async function loadOrders() {
-  const { data } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
-  if (!data) return;
+  const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+  if (error) return console.error(error);
   ordersCash.innerHTML = '';
   ordersTrans.innerHTML = '';
   data.forEach(o => {
     const li = document.createElement('li');
-    const label = o.category === 'Topup ML'
-      ? `Server ID: ${o.server_id}`
-      : `ID Game: ${o.game_id}`;
-    li.textContent = `${new Date(o.created_at).toLocaleString()} — ${label} — ${o.product_name}`;
+    const info = o.category === 'Topup ML' ? `Server ID: ${o.server_id}` : `ID: ${o.game_id}`;
+    li.textContent = `${new Date(o.created_at).toLocaleString()} — ${info} — ${o.product_name}`;
     if (o.payment_method === 'cash') ordersCash.appendChild(li);
     else ordersTrans.appendChild(li);
   });
 }
 
-// —————— Realtime ——————
-function subscribeRealtime() {
-  supabase
-    .channel('products')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, loadProducts)
-    .subscribe();
+// Pemesanan
+orderForm.onsubmit = async e => {
+  e.preventDefault();
+  const prodOpt = productSelect.selectedOptions[0];
+  if (!prodOpt) return alert('Pilih produk.');
 
-  supabase
-    .channel('orders')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
-      const o = payload.new;
-      alert(`Pesanan baru dari ${o.buyer_name}: ${o.product_name}`);
-      loadOrders();
-    })
-    .subscribe();
-}
+  const product_id = prodOpt.value;
+  const product_name = prodOpt.text;
+  const price = parseInt(prodOpt.dataset.price);
+  const game_id = idInput.value.trim();
+  const server_id = serverInput.value.trim();
+  const buyer_name = buyerInput.value.trim();
+  const payment_method = payMethodSelect.value;
+  const secret = secretInput.value.trim();
+  const category = orderCategory.value;
+
+  if (!buyer_name || !game_id || !product_id || !payment_method) return alert('Lengkapi semua data.');
+
+  if (payment_method === 'cash') {
+    const { data: secrets } = await supabase.from('secrets').select('*');
+    const valid = secrets.some(s => s.code === secret);
+    if (!valid) return alert('Kode rahasia salah.');
+  }
+
+  const { error } = await supabase.from('orders').insert([{
+    product_id,
+    product_name,
+    price,
+    game_id,
+    server_id,
+    buyer_name,
+    payment_method,
+    category
+  }]);
+
+  if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
+
+  alert('Pemesanan berhasil!');
+  if (payment_method === 'transfer') {
+    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
+    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
+
+  orderForm.reset();
+  totalPriceEl.textContent = '';
+};
+
+// Init
+window.addEventListener('DOMContentLoaded', loadProducts);
