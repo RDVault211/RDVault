@@ -106,17 +106,20 @@ function renderProductsList(list) {
   });
 }
 
-function renderProductSelect(list) {
-  productSelect.innerHTML = '<option disabled selected>Pilih produk...</option>';
-  list.forEach(p => {
-    const opt = new Option(p.name, p.id);
-    opt.dataset.price = p.price;
-    productSelect.appendChild(opt);
-  });
-  productSelect.onchange = () => {
-    const harga = productSelect.selectedOptions[0]?.dataset.price;
-    totalPriceEl.textContent = harga ? `Total: Rp ${harga}` : '';
-  };
+productSelect.onchange = updateTotalPrice;
+quantityInput.oninput = updateTotalPrice;
+
+function updateTotalPrice() {
+  const selected = productSelect.selectedOptions[0];
+  const price = selected?.dataset.price;
+  const qty = parseInt(quantityInput.value) || 1;
+
+  if (price) {
+    const total = parseInt(price) * qty;
+    totalPriceEl.textContent = `Total: Rp ${total}`;
+  } else {
+    totalPriceEl.textContent = '';
+  }
 }
 
 // Admin Produk
