@@ -102,8 +102,10 @@ function renderProductSelect(list) {
 // —————— Handle Pemesanan ——————
 orderForm.onsubmit = async e => {
   e.preventDefault();
+
   const prodOpt = productSelect.selectedOptions[0];
   if (!prodOpt) return alert('Pilih produk.');
+
   const product_id = prodOpt.value;
   const product_name = prodOpt.text;
   const price = parseInt(prodOpt.dataset.price);
@@ -114,9 +116,16 @@ orderForm.onsubmit = async e => {
   const secret = secretInput.value.trim();
   const category = orderCategory.value;
 
-  if (!buyer_name || !game_id || !product_id || !payment_method) return alert('Lengkapi semua data.');
+  if (!buyer_name || !game_id || !product_id || !payment_method || !category) {
+    return alert('Lengkapi semua data.');
+  }
+
+  if (category === 'Topup ML' && !server_id) {
+    return alert('Masukkan Server ID.');
+  }
 
   if (payment_method === 'cash') {
+    if (!secret) return alert('Masukkan kode rahasia.');
     const { data: secrets } = await supabase.from('secrets').select('*');
     const valid = secrets.some(s => s.code === secret);
     if (!valid) return alert('Kode rahasia salah.');
@@ -132,18 +141,25 @@ orderForm.onsubmit = async e => {
     payment_method,
     category
   }]);
+
   if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
 
   alert('Pemesanan berhasil!');
+
+  // WA link khusus metode transfer
   if (payment_method === 'transfer') {
-    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
-    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+    const pesan = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id}` +
+      (category === 'Topup ML' ? ` Server ID: ${server_id}` : '');
+    const waLink = document.createElement('a');
+    waLink.href = `https://wa.me/6281335761181?text=${encodeURIComponent(pesan)}`;
+    waLink.target = '_blank';
+    waLink.click();
   }
 
   orderForm.reset();
   totalPriceEl.textContent = '';
 };
+
 
 // —————— Admin Login ——————
 loginBtn.onclick = async () => {
