@@ -74,6 +74,9 @@ function loadProducts() {
   renderProductsList(productsCache);         // tampilkan semua produk
   renderProductSelect(productsCache);        // isi dropdown awal
   renderAdminProductList(productsCache);     // untuk admin
+if (!document.getElementById('auth-section')) {
+  // Ini artinya kita di panel pembeli, bukan admin
+  loadProducts();
 }
 
 }
@@ -111,6 +114,11 @@ function renderProductsList(list) {
     div.className = 'product-item';
     div.innerHTML = `<strong>${p.name}</strong><br>Rp ${p.price}<br><em>${p.category}</em>`;
     productList.appendChild(div);
+function renderProductsList(list) {
+  console.log('Render product list:', list);
+  ...
+}
+
   });
 }
 
@@ -121,6 +129,10 @@ function renderProductSelect(list) {
     const opt = new Option(p.name, p.id);
     opt.dataset.price = p.price;
     productSelect.appendChild(opt);
+function renderProductSelect(list) {
+  console.log('Render product select:', list);
+  ...
+}
   });
 
   const updateTotal = () => {
