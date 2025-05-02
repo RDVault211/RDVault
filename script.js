@@ -126,7 +126,8 @@ orderForm.onsubmit = async e => {
 
   if (payment_method === 'cash') {
     if (!secret) return alert('Masukkan kode rahasia.');
-    const { data: secrets } = await supabase.from('secrets').select('*');
+    const { data: secrets, error: secretErr } = await supabase.from('secrets').select('*');
+    if (secretErr) return alert('Gagal mengecek kode rahasia.');
     const valid = secrets.some(s => s.code === secret);
     if (!valid) return alert('Kode rahasia salah.');
   }
@@ -144,18 +145,15 @@ orderForm.onsubmit = async e => {
 
   if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
 
-  alert('Pemesanan berhasil!');
-
-  // WA link khusus metode transfer
   if (payment_method === 'transfer') {
     const pesan = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id}` +
       (category === 'Topup ML' ? ` Server ID: ${server_id}` : '');
-    const waLink = document.createElement('a');
-    waLink.href = `https://wa.me/6281335761181?text=${encodeURIComponent(pesan)}`;
-    waLink.target = '_blank';
-    waLink.click();
+    // Gunakan location.href agar aman di iOS
+    window.location.href = `https://wa.me/6281335761181?text=${encodeURIComponent(pesan)}`;
+    return;
   }
 
+  alert('Pemesanan berhasil!');
   orderForm.reset();
   totalPriceEl.textContent = '';
 };
