@@ -66,15 +66,16 @@ async function initAdmin() {
     .subscribe();
 }
 
-// Load Produk
-async function loadProducts() {
+function loadProducts() {
   const { data, error } = await supabase.from('products').select('*').order('category');
   if (error) return console.error(error);
   productsCache = data;
   renderCategoryFilters();
-  renderProductsList(productsCache);
-  renderProductSelect(productsCache);
-  renderAdminProductList(productsCache);
+  renderProductsList(productsCache);         // tampilkan semua produk
+  renderProductSelect(productsCache);        // isi dropdown awal
+  renderAdminProductList(productsCache);     // untuk admin
+}
+
 }
 
 function renderCategoryFilters() {
@@ -85,6 +86,9 @@ function renderCategoryFilters() {
   categoryFilter.onchange = () => {
     const sel = categoryFilter.value;
     renderProductsList(sel === 'all' ? productsCache : productsCache.filter(p => p.category === sel));
+categoryFilter.onchange();  // Trigger saat awal, tampilkan produk awal
+orderCategory.onchange();   // Sama untuk order panel
+
   };
 
   orderCategory.innerHTML = '<option disabled selected>Pilih kategori...</option>';
