@@ -33,13 +33,6 @@ const ordersCash = document.getElementById('orders-cash');
 const ordersTrans = document.getElementById('orders-transfer');
 
 let productsCache = [];
-// Toggle untuk daftar produk
-const toggleBtn    = document.getElementById('toggle-products');
-const produkListEl = document.getElementById('produk-list');
-
-toggleBtn.addEventListener('click', () => {
-  produkListEl.classList.toggle('hidden');
-});
 
 // Auth
 loginBtn.onclick = async () => {
@@ -111,6 +104,7 @@ function renderProductsList(list) {
     div.innerHTML = `<strong>${p.name}</strong><br>Rp ${p.price}<br><em>${p.category}</em>`;
     productList.appendChild(div);
   });
+}
 
 function renderProductSelect(list) {
   productSelect.innerHTML = '<option disabled selected>Pilih produk...</option>';
