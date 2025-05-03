@@ -65,6 +65,18 @@ async function initAdmin() {
 }
 
 // Load Products
+// JS
+document.addEventListener('DOMContentLoaded', () => {
+  // Load produk, setup event category, dll.
+  loadProduk();
+
+  // Toggle produk list
+  document.getElementById('toggle-products')
+    .addEventListener('click', () => {
+      document.getElementById('produk-list').classList.toggle('hidden');
+    });
+});
+
 async function loadProducts() {
   const { data, error } = await supabase.from('products').select('*').order('category');
   if (error) return console.error(error);
@@ -104,7 +116,6 @@ function renderProductsList(list) {
     div.innerHTML = `<strong>${p.name}</strong><br>Rp ${p.price}<br><em>${p.category}</em>`;
     productList.appendChild(div);
   });
-}
 
 function renderProductSelect(list) {
   productSelect.innerHTML = '<option disabled selected>Pilih produk...</option>';
