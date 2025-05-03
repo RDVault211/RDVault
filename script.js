@@ -33,6 +33,13 @@ const ordersCash = document.getElementById('orders-cash');
 const ordersTrans = document.getElementById('orders-transfer');
 
 let productsCache = [];
+// Toggle untuk daftar produk
+const toggleBtn    = document.getElementById('toggle-products');
+const produkListEl = document.getElementById('produk-list');
+
+toggleBtn.addEventListener('click', () => {
+  produkListEl.classList.toggle('hidden');
+});
 
 // Auth
 loginBtn.onclick = async () => {
@@ -65,18 +72,6 @@ async function initAdmin() {
 }
 
 // Load Products
-// JS
-document.addEventListener('DOMContentLoaded', () => {
-  // Load produk, setup event category, dll.
-  loadProduk();
-
-  // Toggle produk list
-  document.getElementById('toggle-products')
-    .addEventListener('click', () => {
-      document.getElementById('produk-list').classList.toggle('hidden');
-    });
-});
-
 async function loadProducts() {
   const { data, error } = await supabase.from('products').select('*').order('category');
   if (error) return console.error(error);
