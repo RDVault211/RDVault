@@ -104,7 +104,14 @@ function renderProductsList(list) {
     div.innerHTML = `<strong>${p.name}</strong><br>Rp ${p.price}<br><em>${p.category}</em>`;
     productList.appendChild(div);
   });
-
+}
+       $('toggle-products').onclick = () => $('product-list').classList.toggle('hidden');
+function renderProductSelect(list) {
+  productSelect.innerHTML = '<option disabled selected>Pilih produk...</option>';
+  list.forEach(p => {
+    const opt = new Option(p.name, p.id);
+    opt.dataset.price = p.price;
+    productSelect.appendChild(opt);
   });
   productSelect.onchange = () => {
     const harga = productSelect.selectedOptions[0]?.dataset.price;
