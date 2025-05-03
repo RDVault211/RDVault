@@ -115,7 +115,7 @@ function renderProductSelect(list) {
   });
   productSelect.onchange = () => {
     const harga = productSelect.selectedOptions[0]?.dataset.price;
-    totalPriceEl.textContent = harga ? `Total: Rp ${harga*quantity}` : '';
+    totalPriceEl.textContent = harga ? `Total: Rp ${harga}` : '';
   };
 }
 
@@ -161,9 +161,6 @@ async function loadOrders() {
     li.textContent = `${new Date(o.created_at).toLocaleString()} — ${info} — ${o.product_name}`;
     if (o.payment_method === 'cash') ordersCash.appendChild(li);
     else ordersTrans.appendChild(li);
-const showQty = sel === 'Joki MLBB';
-document.getElementById('quantity-group').classList.toggle('hidden', !showQty);
-
   });
 }
 
