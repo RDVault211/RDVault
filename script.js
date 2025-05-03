@@ -105,7 +105,7 @@ function renderProductsList(list) {
     productList.appendChild(div);
   });
 }
-       $('toggle-products').onclick = () => $('product-list').classList.toggle('hidden');
+
 function renderProductSelect(list) {
   productSelect.innerHTML = '<option disabled selected>Pilih produk...</option>';
   list.forEach(p => {
@@ -118,6 +118,7 @@ function renderProductSelect(list) {
     totalPriceEl.textContent = harga ? `Total: Rp ${harga}` : '';
   };
 }
+
 // Admin Produk
 function renderAdminProductList(list) {
   adminProducts.innerHTML = '';
@@ -206,9 +207,7 @@ orderForm.onsubmit = async e => {
     const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
-  if (category === 'Joki MLBB' || $('payment_method').value === 'transfer') {
-         const info = category.startsWith('Topup') ? `Server ID: ${$('server_id').value}` : `ID: ${$('id_game').value}`;
-         window.open(`https://wa.me/6282334077373?text=${ encodeURIComponent(`Halo Admin, saya ${$('buyer_name').value} pesan ${qty}× ${sel.text} (${info})`) }`, '_blank');
+
   orderForm.reset();
   totalPriceEl.textContent = '';
 };
