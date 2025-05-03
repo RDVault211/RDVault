@@ -20,6 +20,7 @@
     .card h3 { margin: 0 0 0.5rem; }
     ul { list-style: none; padding: 0; }
     ul li { background: #2a2a2a; margin-bottom: 0.5rem; padding: 0.5rem; border-left: 4px solid #007aff; }
+    #current-category { font-size: 1.25rem; margin-bottom: 1rem; }
   </style>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"></script>
 </head>
@@ -28,14 +29,24 @@
     <img src="logo.png" alt="RDVault Logo" class="logo" />
   </header>
   <main>
+    <!-- Toggle & Category Filter -->
+    <section>
+      <button id="toggle-products">Tampilkan / Sembunyikan Produk</button>
+      <select id="filter-category">
+        <option value="all" selected>Semua Kategori</option>
+        <option value="Topup ML">Topup ML</option>
+        <option value="Topup FF">Topup FF</option>
+        <option value="Topup PUBGM">Topup PUBGM</option>
+        <option value="Joki MLBB">Joki MLBB</option>
+      </select>
+      <div id="current-category" class="hidden"></div>
+      <div id="produk-list" class="hidden"></div>
+    </section>
+
     <!-- Buyer Section -->
     <section id="buyer-section">
       <h2>Pemesanan</h2>
       <form id="order-form">
-        <label for="order-category">Kategori</label>
-        <select id="order-category" required>
-          <option value="" disabled selected>Pilih kategori...</option>
-        </select>
         <label for="product">Produk</label>
         <select id="product" required>
           <option value="" disabled selected>Pilih produk...</option>
@@ -66,13 +77,6 @@
         <button type="submit">Pesan Sekarang</button>
       </form>
     </section>
-
-    <!-- Toggle Produk List -->
-    <div>
-      <button id="toggle-products">Tampilkan / Sembunyikan Produk</button>
-    </div>
-    <!-- Produk List -->
-    <div id="produk-list" class="hidden"></div>
 
     <!-- Admin Section -->
     <section id="admin-section">
@@ -118,62 +122,63 @@
       'https://roiwwquzsyiwzifjvagc.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvaXd3cXV6c3lpd3ppZmp2YWdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNDI1MDksImV4cCI6MjA2MTgxODUwOX0.r55cFBttjq259Sved86qScdouQbCFUDeIJCFbwCDkeA'
     );
-    const cache = { products: [] };
     const $ = id => document.getElementById(id);
+    let cache = {};
 
-    window.addEventListener('DOMContentLoaded', () => {
-      loadProducts();
-      $('toggle-products').addEventListener('click', () => $('produk-list').classList.toggle('hidden'));
-      $('order-category').addEventListener('change', handleCategoryChange);
-      $('product').addEventListener('change', updateTotal);
-      $('quantity').addEventListener('input', updateTotal);
-      $('payment_method').addEventListener('change', e => $('secret-group').classList.toggle('hidden', e.target.value !== 'cash'));
-      $('order-form').addEventListener('submit', handleOrderSubmit);
-      supabase.auth.onAuthStateChange((_, session) => {
-        $('login-form').classList.toggle('hidden', !!session);
-        $('admin-panel').classList.toggle('hidden', !session);
-        if (session) loadAdminData();
-      });
-      $('login-form').addEventListener('submit', async e => {
-        e.preventDefault();
-        await supabase.auth.signInWithPassword({ email: $('email').value, password: $('password').value });
-      });
-      $('logout-btn').addEventListener('click', async () => { await supabase.auth.signOut(); });
-      $('add-product-btn').addEventListener('click', async () => {
-        await supabase.from('products').insert([{ name: $('new-name').value, price: parseInt($('new-price').value), category: $('new-category').value }]);
-        loadAdminData(); loadProducts();
-      });
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadProducts();
+      setupUI();
+      setupAuth();
     });
 
     async function loadProducts() {
       const { data } = await supabase.from('products').select('*').order('category');
       cache.products = data;
-      const categories = [...new Set(data.map(p => p.category))];
-      const selCat = $('order-category'); selCat.innerHTML = '<option disabled selected>Pilih kategori...</option>';
-      categories.forEach(c => selCat.add(new Option(c, c)));
-      $('produk-list').classList.add('hidden');
+      // populate filter categories
+      const cats = [...new Set(data.map(p => p.category))];
+      const fc = $('filter-category');
+      cats.forEach(c => fc.add(new Option(c, c)));
     }
 
-    function handleCategoryChange(e) {
-      const sel = e.target.value;
-      const list = cache.products.filter(p => p.category === sel);
-      renderProdukList(list); renderProductOptions(list);
-      $('label-server').classList.toggle('hidden', !(sel === 'Topup ML' || sel === 'Topup PUBGM'));
-      $('server_id').parentElement.classList.toggle('hidden', !(sel === 'Topup ML' || sel === 'Topup PUBGM'));
-      $('quantity-group').classList.toggle('hidden', sel !== 'Joki MLBB');
-      $('produk-list').classList.remove('hidden');
+    function setupUI() {
+      // Toggle products list
+      $('toggle-products').onclick = () => $('produk-list').classList.toggle('hidden');
+      // Filter category change
+      $('filter-category').onchange = e => {
+        const c = e.target.value;
+        $('current-category').textContent = `Kategori: ${c}`;
+        $('current-category').classList.remove('hidden');
+        const list = cache.products.filter(p => p.category === c);
+        renderProducts(list);
+        renderOptions(list);
+      };
+      // render buyer options
+      $('order-category').onchange = e => $('filter-category').value = e.target.value;
+      // setup category for form too
+      const oc = $('order-category'); oc.innerHTML = '<option disabled selected>Pilih kategori...</option>';
+      ['Topup ML','Topup FF','Topup PUBGM','Joki MLBB'].forEach(c=>oc.add(new Option(c,c)));
+      oc.onchange = e => $('filter-category').onchange(e);
+
+      // setup form payment toggles
+      $('payment_method').onchange = e => $('secret-group').classList.toggle('hidden', e.target.value !== 'cash');
+      $('quantity').oninput = updateTotal;
+      $('product').onchange = updateTotal;
+
+      // Submit order
+      $('order-form').onsubmit = handleOrderSubmit;
     }
 
-    function renderProdukList(list) {
+    function renderProducts(list) {
       const el = $('produk-list'); el.innerHTML = '';
       list.forEach(p => {
         const card = document.createElement('div'); card.className = 'card';
-        card.innerHTML = `<h3 class="text-white">${p.name}</h3><p class="text-gray-300">Rp ${p.price.toLocaleString()}</p>`;
+        card.innerHTML = `<h3>${p.name}</h3><p>Rp ${p.price.toLocaleString()}</p>`;
         el.appendChild(card);
       });
+      $('produk-list').classList.remove('hidden');
     }
 
-    function renderProductOptions(list) {
+    function renderOptions(list) {
       const sel = $('product'); sel.innerHTML = '<option disabled selected>Pilih produk...</option>';
       list.forEach(p => { const o = new Option(p.name + ' - Rp' + p.price, p.id); o.dataset.price = p.price; sel.add(o); });
     }
@@ -182,51 +187,48 @@
       const sel = $('product').selectedOptions[0];
       const price = sel ? parseInt(sel.dataset.price) : 0;
       const qty = parseInt($('quantity').value) || 1;
-      const total = price * qty;
-      $('total-price').textContent = `Total: Rp ${total.toLocaleString()}`;
+      $('total-price').textContent = `Total: Rp ${ (price * qty).toLocaleString() }`;
     }
 
     async function handleOrderSubmit(e) {
       e.preventDefault();
       const sel = $('product').selectedOptions[0]; if (!sel) return alert('Pilih produk');
-      const payload = {
-        product_id: sel.value,
-        product_name: sel.text,
-        price: parseInt(sel.dataset.price) * (parseInt($('quantity').value) || 1),
-        quantity: parseInt($('quantity').value) || 1,
-        category: $('order-category').value,
-        game_id: $('id_game').value,
-        server_id: $('server_id').value,
-        buyer_name: $('buyer_name').value,
-        payment_method: $('payment_method').value
-      };
-      if (payload.payment_method === 'cash') {
-        const { data } = await supabase.from('secrets').select().eq('code', $('secret').value);
+      const category = $('order-category').value;
+      const qty = parseInt($('quantity').value) || 1;
+      const total = parseInt(sel.dataset.price) * qty;
+      if ($('payment_method').value === 'cash') {
+        const { data } = await supabase.from('secrets').select().eq('code', $('secret').value.trim());
         if (!data.length) return alert('Kode rahasia salah');
       }
-      await supabase.from('orders').insert([payload]);
+      await supabase.from('orders').insert([{ product_id: sel.value, product_name: sel.text, price: total, quantity: qty, category, game_id: $('id_game').value, server_id: $('server_id').value, buyer_name: $('buyer_name').value, payment_method: $('payment_method').value }]);
       alert('Pesanan berhasil!');
-      if (payload.category === 'Joki MLBB' || payload.payment_method === 'transfer') {
-        const info = payload.category.startsWith('Topup') ? `Server ID: ${payload.server_id}` : `ID: ${payload.game_id}`;
-        window.open(`https://wa.me/6281335761181?text=${encodeURIComponent(`Halo Admin, saya ${payload.buyer_name} pesan ${payload.quantity}× ${payload.product_name} (${info})`)}`,'_blank');
+      if (category === 'Joki MLBB' || $('payment_method').value === 'transfer') {
+        const info = category.startsWith('Topup') ? `Server ID: ${$('server_id').value}` : `ID: ${$('id_game').value}`;
+        window.open(`https://wa.me/6281335761181?text=${ encodeURIComponent(`Halo Admin, saya ${$('buyer_name').value} pesan ${qty}× ${sel.text} (${info})`) }`, '_blank');
       }
-      $('order-form').reset(); $('produk-list').classList.add('hidden');
+      $('order-form').reset();
+      $('produk-list').classList.add('hidden');
+    }
+
+    // Authentication & Admin
+    function setupAuth() {
+      supabase.auth.onAuthStateChange((_, session) => {
+        $('login-form').classList.toggle('hidden', !!session);
+        $('admin-panel').classList.toggle('hidden', !session);
+        if (session) loadAdminData();
+      });
+      $('login-form').onsubmit = async e => { e.preventDefault(); await supabase.auth.signInWithPassword({ email:$('email').value, password:$('password').value }); };
+      $('logout-btn').onclick = async () => { await supabase.auth.signOut(); };
+      $('add-product-btn').onclick = async () => { await supabase.from('products').insert([{ name:$('new-name').value, price:parseInt($('new-price').value), category:$('new-category').value }]); loadAdminData(); loadProducts(); };
     }
 
     async function loadAdminData() {
       const { data: prods } = await supabase.from('products').select();
       const el = $('admin-produk-list'); el.innerHTML = '';
-      prods.forEach(p => {
-        const row = document.createElement('div'); row.className = 'flex justify-between bg-gray-800 p-2 rounded mb-2';
-        row.innerHTML = `<span>${p.name} - Rp${p.price} (${p.category})</span><button class='bg-red-500 px-2' onclick="hapus('${p.id}')">Hapus</button>`;
-        el.appendChild(row);
-      });
+      prods.forEach(p => { const d = document.createElement('div'); d.className='flex justify-between bg-gray-800 p-2 rounded mb-2'; d.innerHTML=`<span>${p.name} - Rp${p.price} (${p.category})</span><button class='bg-red-500 px-2' onclick="hapus('${p.id}')">Hapus</button>`; el.append(d); });
       const { data: ord } = await supabase.from('orders').select();
       $('orders-cash').innerHTML = ''; $('orders-transfer').innerHTML = '';
-      ord.forEach(o => {
-        const li = document.createElement('li'); li.textContent = `${o.buyer_name} - Rp${o.price} [${o.payment_method}]`;
-        (o.payment_method === 'cash' ? $('orders-cash') : $('orders-transfer')).appendChild(li);
-      });
+      ord.forEach(o => { const li=document.createElement('li'); li.textContent=`${o.buyer_name} - Rp${o.price} [${o.payment_method}]`; (o.payment_method==='cash'?$('orders-cash'):$('orders-transfer')).append(li); });
     }
     window.hapus = async id => { await supabase.from('products').delete().eq('id', id); loadAdminData(); loadProducts(); };
   </script>
