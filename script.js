@@ -198,35 +198,73 @@ orderForm.onsubmit = async e => {
     payment_method,
     category
   }]);
+/**
+ * Kirim notifikasi WA lewat Wablas
+ * @param {string} buyer Nama pembeli
+ * @param {string} product Nama produk
+ * @param {number} quantity Jumlah
+ * @param {string} category Kategori produk
+ * @param {string} gameId ID game
+ * @param {string} serverId Server ID (boleh kosong)
+ * @param {string} method Metode pembayaran
+ */
+async function sendWablasNotification(buyer, product, quantity, category, gameId, serverId, method) {
+  const API_KEY = 'XoV5NnZhzYf89bDBinbKXnM51dBjtl0JLqwTC70hOh4Wf31BwemepCz';
+  const PHONE  = '6281335761181';  // nomor WA admin
+  const info   = category.startsWith('Topup') 
+                   ? `Server ID: ${serverId}` 
+                   : `ID Game: ${gameId}`;
+  const message = 
+    `📥 *Pesanan Baru* 📥\n\n` +
+    `• Nama: ${buyer}\n` +
+    `• Produk: ${quantity}× ${product}\n` +
+    `• Kategori: ${category}\n` +
+    `• ${info}\n` +
+    `• Metode: ${method}`;
+
+  try {
+    const res = await fetch('https://console.wablas.com/api/send-message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': API_KEY
+      },
+      body: JSON.stringify({
+        phone: PHONE,
+        message,
+        priority: true,
+        secret: false
+      })
+    });
+    const json = await res.json();
+    if (!json.status) {
+      console.error('Wablas error:', json);
+    } else {
+      console.log('Notifikasi WA terkirim:', json);
+    }
+  } catch (err) {
+    console.error('Fetch Wablas gagal:', err);
+  }
+}
 
   if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
-// Kirim notifikasi WhatsApp via Wablas
-try {
-  const waResponse = await fetch('https://console.wablas.com/api/send-message', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'XoV5NnZhzYf89bDBinbKXnM51dBjtl0JLqwTC70hOh4Wf31BwemepCz'
-    },
-    body: JSON.stringify({
-      phone: '6281335761181',
-      message: `Pesanan baru:\n\nNama: ${buyer_name}\nProduk: ${product_name}\nKategori: ${category}\nMetode: ${payment_method}\nID: ${game_id}${category === 'Topup ML' ? `\nServer ID: ${server_id}` : ''}`
-    })
-  });
 
-  const waResult = await waResponse.json();
-  if (!waResult.status) {
-    console.warn('Gagal kirim WA:', waResult);
-  }
-} catch (err) {
-  console.error('Error kirim WA:', err);
-      }
   alert('Pemesanan berhasil!');
   if (payment_method === 'transfer') {
     const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
     const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
+// … setelah insert ke Supabase dan alert sukses …
+await sendWablasNotification(
+  buyer_name,
+  product_name,
+  quantity,
+  category,
+  game_id,
+  server_id,
+  payment_method
+);
 
   orderForm.reset();
   totalPriceEl.textContent = '';
