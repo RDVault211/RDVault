@@ -200,21 +200,6 @@ orderForm.onsubmit = async e => {
   }]);
 
   if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
-
-  alert('Pemesanan berhasil!');
-  if (payment_method === 'transfer') {
-    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
-    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  }
-
-  orderForm.reset();
-  totalPriceEl.textContent = '';
-};
-
-// Init
-window.addEventListener('DOMContentLoaded', loadProducts);
-
 // Kirim notifikasi WhatsApp via Wablas
 try {
   const waResponse = await fetch('https://console.wablas.com/api/send-message', {
@@ -235,5 +220,20 @@ try {
   }
 } catch (err) {
   console.error('Error kirim WA:', err);
-}
+      }
+  alert('Pemesanan berhasil!');
+  if (payment_method === 'transfer') {
+    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
+    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
+
+  orderForm.reset();
+  totalPriceEl.textContent = '';
+};
+
+// Init
+window.addEventListener('DOMContentLoaded', loadProducts);
+
+
 
