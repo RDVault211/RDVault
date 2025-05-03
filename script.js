@@ -74,9 +74,6 @@ async function loadProducts() {
   renderProductSelect(productsCache);
   renderAdminProductList(productsCache);
 }
-function setupUI() {
-       // Toggle products list
-       $('toggle-products').onclick = () => $('produk-list').classList.toggle('hidden');
 
 function renderCategoryFilters() {
   const cats = ['all', ...new Set(productsCache.map(p => p.category))];
