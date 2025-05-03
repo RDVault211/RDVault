@@ -10,6 +10,11 @@
   <h1 class="title">RDVault</h1>
 
   <!-- Filter & List Produk -->
+  </select>
+       <button id="toggle-products">Tampilkan / Sembunyikan Produk</button>
+  </select>
+       <div id="current-category" class="hidden"></div>
+       <div id="produk-list" class="hidden"></div>
   <section id="products-section">
     <h2>Filter Produk</h2>
     <label for="category-filter">Pilih Kategori:</label>
@@ -17,8 +22,7 @@
       <option value="all">Semua</option>
     </select>
     <div id="product-list" class="grid"></div>
-  </section>
-
+ <section>
   <!-- Form Pemesanan -->
   <section id="order-section">
     <h2>Pemesanan</h2>
@@ -40,6 +44,11 @@
 
       <label for="server_id" id="label-server" class="hidden">Server ID</label>
       <input type="text" id="server_id" class="hidden"/>
+<!-- sebelum <input id="buyer_name"...> -->
+<div id="quantity-group" class="hidden">
+  <label for="quantity">Jumlah:</label>
+  <input type="number" id="quantity" value="1" min="1" />
+</div>
 
       <label for="buyer_name">Nama Pembeli</label>
       <input type="text" id="buyer_name" required/>
@@ -75,6 +84,7 @@
         <option value="Topup ML">Topup ML</option>
         <option value="Topup FF">Topup FF</option>
         <option value="Joki MLBB">Joki MLBB</option>
+ <option value="Topup PUBGM">Topup PUBGM</option>
       </select><br/>
       <button id="add-product-btn">Tambah Produk</button>
       <div id="admin-products" class="grid"></div>
