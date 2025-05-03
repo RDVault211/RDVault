@@ -1,104 +1,241 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>RDVault</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RDVault Topup</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #121212; color: #fff; }
+    header { background: #0b0b0b; padding: 1rem; text-align: center; }
+    header img { height: 60px; }
+    main { padding: 1rem; max-width: 800px; margin: auto; }
+    section { margin-bottom: 2rem; background: #1f1f1f; padding: 1rem; border-radius: 8px; }
+    label, select, input, button { display: block; width: 100%; margin-bottom: 0.75rem; }
+    input, select { padding: 0.5rem; border-radius: 4px; border: 1px solid #333; background: #2a2a2a; color: #fff; }
+    button { padding: 0.75rem; background: #007aff; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #005fcc; }
+    .hidden { display: none !important; }
+    ul { list-style: none; padding: 0; }
+    ul li { background: #2a2a2a; margin-bottom: 0.5rem; padding: 0.5rem; border-left: 4px solid #007aff; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm" type="module"></script>
 </head>
 <body>
-  <h1 class="title">RDVault</h1>
+  <header>
+    <img src="logo.png" alt="RDVault Logo">
+  </header>
+  <main>
+    <!-- Buyer Section -->
+    <section id="buyer-section">
+      <h2>Pemesanan</h2>
+      <form id="order-form">
+        <label for="order-category">Kategori</label>
+        <select id="order-category" required>
+          <option value="" disabled selected>Pilih kategori...</option>
+        </select>
 
-  <!-- Filter & List Produk -->
+        <label for="product">Produk</label>
+        <select id="product" required>
+          <option value="" disabled selected>Pilih produk...</option>
+        </select>
 
-  <section id="products-section">
-    <h2>Filter Produk</h2>
-    <label for="category-filter">Pilih Kategori:</label>
-    <select id="category-filter">
-      <option value="all">Semua</option>
-    </select>
- <!-- TOMBOL TOGGLE PRODUK -->
-<div class="container mx-auto px-4 mb-4">
-  <button id="toggle-products" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-    Tampilkan / Sembunyikan Produk
-  </button>
-</div>
+        <div id="label-server" class="hidden">
+          <label for="server_id">Server ID</label>
+          <input id="server_id" type="text" placeholder="Server ID">
+        </div>
 
+        <label for="id_game">ID Game</label>
+        <input id="id_game" type="text" placeholder="Masukkan ID Game" required>
 
+        <label for="buyer_name">Nama Pembeli</label>
+        <input id="buyer_name" type="text" placeholder="Nama Anda" required>
 
-  <!-- Form Pemesanan -->
-  <section id="order-section">
-    <h2>Pemesanan</h2>
-    <form id="order-form">
-      <label for="order-category">Kategori Produk</label>
-      <select id="order-category" required>
-        <option value="" disabled selected>Pilih kategori...</option>
-      </select>
+        <div id="quantity-group" class="hidden">
+          <label for="quantity">Jumlah</label>
+          <input id="quantity" type="number" value="1" min="1">
+        </div>
 
-      <label for="product">Pilih Produk</label>
-      <select id="product" required>
-        <option value="" disabled selected>Pilih produk...</option>
-      </select>
+        <label for="payment_method">Metode Pembayaran</label>
+        <select id="payment_method" required>
+          <option value="" disabled selected>Pilih metode...</option>
+          <option value="cash">Cash (Kode Rahasia)</option>
+          <option value="transfer">Transfer</option>
+        </select>
 
-      <p id="total-price">Total: Rp 0</p>
+        <div id="secret-group" class="hidden">
+          <label for="secret">Kode Rahasia</label>
+          <input id="secret" type="text" placeholder="Masukkan kode rahasia">
+        </div>
 
-      <label for="id_game" id="label-id">ID Game</label>
-      <input type="text" id="id_game" required/>
+        <p id="total-price">Total: Rp 0</p>
+        <button type="submit">Pesan Sekarang</button>
+      </form>
+    </section>
 
-      <label for="server_id" id="label-server" class="hidden">Server ID</label>
-      <input type="text" id="server_id" class="hidden"/>
-<!-- sebelum <input id="buyer_name"...> -->
-<div id="quantity-group" class="hidden">
-  <label for="quantity">Jumlah:</label>
-  <input type="number" id="quantity" value="1" min="1" />
-</div>
+    <!-- Admin Section -->
+    <section id="admin-section">
+      <h2>Admin Panel</h2>
+      <form id="login-form">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="Admin email" required>
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Password" required>
+        <button type="submit">Login</button>
+      </form>
 
-      <label for="buyer_name">Nama Pembeli</label>
-      <input type="text" id="buyer_name" required/>
+      <div id="admin-panel" class="hidden">
+        <button id="logout-btn">Logout</button>
+        <h3>Tambah Produk</h3>
+        <label for="new-name">Nama</label>
+        <input id="new-name" type="text" placeholder="Nama produk">
+        <label for="new-price">Harga</label>
+        <input id="new-price" type="number" placeholder="Harga produk">
+        <label for="new-category">Kategori</label>
+        <select id="new-category">
+          <option value="Topup ML">Topup ML</option>
+          <option value="Topup FF">Topup FF</option>
+          <option value="Topup PUBGM">Topup PUBGM</option>
+          <option value="Joki MLBB">Joki MLBB</option>
+        </select>
+        <button id="add-product-btn">Tambah Produk</button>
 
-      <label for="payment_method">Metode Pembayaran</label>
-      <select id="payment_method" required>
-        <option value="cash">Cash (Kode Rahasia)</option>
-        <option value="transfer">Transfer BCA</option>
-      </select>
+        <h3>Daftar Produk</h3>
+        <div id="admin-produk-list"></div>
 
-      <label for="secret">Kode Rahasia (jika Cash)</label>
-      <input type="text" id="secret"/>
+        <h3>Daftar Pesanan</h3>
+        <h4>Cash</h4>
+        <ul id="orders-cash"></ul>
+        <h4>Transfer</h4>
+        <ul id="orders-transfer"></ul>
+      </div>
+    </section>
+  </main>
 
-      <button type="submit">Pesan Sekarang</button>
-    </form>
-  </section>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    const supabase = createClient(
+      'https://roiwwquzsyiwzifjvagc.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvaXd3cXV6c3lpd3ppZmp2YWdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNDI1MDksImV4cCI6MjA2MTgxODUwOX0.r55cFBttjq259Sved86qScdouQbCFUDeIJCFbwCDkeA'
+    );
 
-  <!-- Admin Panel -->
-  <section id="admin-section">
-    <h2>Admin Panel</h2>
-    <div id="auth-section">
-      <input type="email" id="email" placeholder="Email Admin"/><br/>
-      <input type="password" id="password" placeholder="Password"/><br/>
-      <button id="login-btn">Login</button>
-      <button id="logout-btn" class="hidden">Logout</button>
-    </div>
-    <div id="admin-panel" class="hidden">
-      <button id="logout2-btn">Logout</button>
-      <h3>Kelola Produk</h3>
-      <input type="text" id="new-name" placeholder="Nama Produk"/><br/>
-      <input type="number" id="new-price" placeholder="Harga"/><br/>
-      <select id="new-category">
-        <option value="Topup ML">Topup ML</option>
-        <option value="Topup FF">Topup FF</option>
-        <option value="Joki MLBB">Joki MLBB</option>
- <option value="Topup PUBGM">Topup PUBGM</option>
-      </select><br/>
-      <button id="add-product-btn">Tambah Produk</button>
-      <div id="admin-products" class="grid"></div>
+    // DOM
+    const $ = id => document.getElementById(id);
+    const cache = { products: [] };
 
-      <h3>Daftar Pesanan</h3>
-      <h4>Cash</h4><ul id="orders-cash" class="order-list"></ul>
-      <h4>Transfer</h4><ul id="orders-transfer" class="order-list"></ul>
-    </div>
-  </section>
+    // Init
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadProducts();
+      setupToggle();
+      setupCategory();
+      setupPaymentToggle();
+      setupOrderSubmit();
+      setupAuth();
+    });
 
-  <script type="module" src="script.js"></script>
+    // Load Products
+    async function loadProducts() {
+      const { data } = await supabase.from('products').select('*').order('category');
+      cache.products = data;
+      renderCategoryOptions(data);
+      renderProductList(data);
+      renderProductOptions(data);
+    }
+
+    // Render Category
+    function renderCategoryOptions(list) {
+      const sel = $('order-category'); sel.innerHTML = '<option disabled selected>Pilih kategori...</option>';
+      [...new Set(list.map(p=>p.category))].forEach(c=>sel.add(new Option(c,c)));
+    }
+
+    // Buyer: list & dropdown
+    function renderProductList(list) {
+      const el = $('produk-list'); el.innerHTML = '';
+      list.forEach(p=>{
+        const div=document.createElement('div');
+        div.className='p-4 bg-gray-800 rounded shadow mb-4';
+        div.innerHTML=`<strong>${p.name}</strong><br>Rp ${p.price.toLocaleString()}`;
+        el.append(div);
+      });
+    }
+    function renderProductOptions(list) {
+      const sel=$('product'); sel.innerHTML='<option disabled selected>Pilih produk...</option>';
+      list.forEach(p=>{ const o=new Option(p.name+' - Rp'+p.price,p.id); o.dataset.price=p.price; sel.add(o); });
+    }
+
+    // Toggle show/hide list
+    function setupToggle() {
+      $('order-category').addEventListener('change', () => {
+        $('produk-list').classList.remove('hidden');
+      });
+    }
+
+    // Category change: server & qty
+    function setupCategory() {
+      $('order-category').onchange = e => {
+        const c=e.target.value;
+        const sub=cache.products.filter(p=>p.category===c);
+        renderProductList(sub); renderProductOptions(sub);
+        $('label-server').classList.toggle('hidden',!(c==='Topup ML'||c==='Topup PUBGM'));
+        $('quantity-group').classList.toggle('hidden',c!=='Joki MLBB');
+      };
+    }
+
+    // Payment toggle secret
+    function setupPaymentToggle() {
+      $('payment_method').onchange = e => {
+        $('secret-group').classList.toggle('hidden',e.target.value!=='cash');
+      };
+    }
+
+    // Order submit
+    function setupOrderSubmit() {
+      $('order-form').onsubmit = async e => {
+        e.preventDefault();
+        const c=$('order-category').value;
+        const prod=$('product').selectedOptions[0];
+        const q=parseInt($('quantity').value)||1;
+        const price=prod?parseInt(prod.dataset.price)*q:0;
+        if(!$('buyer_name').value||!prod) return alert('Lengkapi data');
+        if($('payment_method').value==='cash'){
+          const { data }=await supabase.from('secrets').select().eq('code',$('secret').value);
+          if(!data.length) return alert('Kode rahasia salah');
+        }
+        await supabase.from('orders').insert([{ product_id:prod.value, product_name:prod.text, price, quantity:q, category:c, game_id:$('id_game').value, server_id:$('server_id').value, buyer_name:$('buyer_name').value, payment_method:$('payment_method').value }]);
+        alert('Pesanan berhasil!');
+        if(c==='Joki MLBB'||$('payment_method').value==='transfer'){
+          const info=c.startsWith('Topup')?`Server ID: ${$('server_id').value}`:`ID: ${$('id_game').value}`;
+          window.open(`https://wa.me/6281335761181?text=${encodeURIComponent(`Halo Admin, saya ${$('buyer_name').value} pesan ${q}× ${prod.text} (${info})`)}`,'_blank');
+        }
+        e.target.reset(); $('produk-list').classList.add('hidden');
+      };
+    }
+
+    // Auth & Admin
+    function setupAuth() {
+      supabase.auth.onAuthStateChange((_, session)=>{
+        $('login-form').classList.toggle('hidden',!!session);
+        $('admin-panel').classList.toggle('hidden',!session);
+        if(session) loadAdminData();
+      });
+      $('login-form').onsubmit = async e => { e.preventDefault(); await supabase.auth.signInWithPassword({ email:$('email').value, password:$('password').value }); };
+      $('logout-btn').onclick = async()=>{ await supabase.auth.signOut(); document.location.reload(); };
+    }
+
+    async function loadAdminData() {
+      const { data:prods } = await supabase.from('products').select();
+      const el = $('admin-produk-list'); el.innerHTML='';
+      prods.forEach(p=>{
+        const d=document.createElement('div'); d.className='flex justify-between bg-gray-800 p-2 rounded mb-2';
+        d.innerHTML=`<span>${p.name} - Rp${p.price} (${p.category})</span><button class='bg-red-500 px-2' onclick="hapus('${p.id}')">Hapus</button>`;
+        el.append(d);
+      });
+      const { data:ord } = await supabase.from('orders').select();
+      $('orders-cash').innerHTML=''; $('orders-transfer').innerHTML='';
+      ord.forEach(o=>{ const li=document.createElement('li'); li.textContent=`${o.buyer_name} - Rp${o.price} [${o.payment_method}]`; (o.payment_method==='cash'?$('orders-cash'):$('orders-transfer')).append(li); });
+    }
+    window.hapus = async id=>{ await supabase.from('products').delete().eq('id',id); loadAdminData(); loadProducts(); };
+  </script>
 </body>
 </html>
+
 
