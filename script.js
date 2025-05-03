@@ -105,7 +105,8 @@ function renderProductsList(list) {
     productList.appendChild(div);
   });
 }
-
+// Toggle products list
+       $('toggle-products').onclick = () => $('produk-list').classList.toggle('hidden');
 function renderProductSelect(list) {
   productSelect.innerHTML = '<option disabled selected>Pilih produk...</option>';
   list.forEach(p => {
@@ -118,7 +119,10 @@ function renderProductSelect(list) {
     totalPriceEl.textContent = harga ? `Total: Rp ${harga}` : '';
   };
 }
-
+// setup form payment toggles
+       $('payment_method').onchange = e => $('secret-group').classList.toggle('hidden', e.target.value !== 'cash');
+       $('quantity').oninput = updateTotal;
+       $('product').onchange = updateTotal;
 // Admin Produk
 function renderAdminProductList(list) {
   adminProducts.innerHTML = '';
@@ -207,7 +211,9 @@ orderForm.onsubmit = async e => {
     const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
-
+  if (category === 'Joki MLBB' || $('payment_method').value === 'transfer') {
+         const info = category.startsWith('Topup') ? `Server ID: ${$('server_id').value}` : `ID: ${$('id_game').value}`;
+         window.open(`https://wa.me/6281335761181?text=${ encodeURIComponent(`Halo Admin, saya ${$('buyer_name').value} pesan ${qty}× ${sel.text} (${info})`) }`, '_blank');
   orderForm.reset();
   totalPriceEl.textContent = '';
 };
