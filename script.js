@@ -225,7 +225,7 @@ try {
     },
     body: JSON.stringify({
       phone: '6281335761181',
-      message: `Pesanan baru:\n\nNama: ${buyer_name}\nProduk: ${quantity}x ${product_name}\nKategori: ${category}\nMetode: ${payment_method}\nID: ${game_id}${category === 'Topup ML' ? `\nServer ID: ${server_id}` : ''}`
+      message: `Pesanan baru:\n\nNama: ${buyer_name}\nProduk: ${product_name}\nKategori: ${category}\nMetode: ${payment_method}\nID: ${game_id}${category === 'Topup ML' ? `\nServer ID: ${server_id}` : ''}`
     })
   });
 
