@@ -1,28 +1,31 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RDVault Topup</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #121212; color: #fff; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #121212; color: #ffffff; }
     header { background: #0b0b0b; padding: 1rem; text-align: center; }
-    header img { height: 60px; }
-    main { padding: 1rem; max-width: 800px; margin: auto; }
+    header .logo { height: 60px; }
+    main { padding: 1rem; max-width: 900px; margin: auto; }
     section { margin-bottom: 2rem; background: #1f1f1f; padding: 1rem; border-radius: 8px; }
     label, select, input, button { display: block; width: 100%; margin-bottom: 0.75rem; }
     input, select { padding: 0.5rem; border-radius: 4px; border: 1px solid #333; background: #2a2a2a; color: #fff; }
     button { padding: 0.75rem; background: #007aff; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
     button:hover { background: #005fcc; }
     .hidden { display: none !important; }
+    #produk-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .card { background: #2a2a2a; padding: 1rem; border-radius: 6px; }
+    .card h3 { margin: 0 0 0.5rem; }
     ul { list-style: none; padding: 0; }
     ul li { background: #2a2a2a; margin-bottom: 0.5rem; padding: 0.5rem; border-left: 4px solid #007aff; }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm" type="module"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"></script>
 </head>
 <body>
   <header>
-    <img src="logo.png" alt="RDVault Logo">
+    <img src="logo.png" alt="RDVault Logo" class="logo" />
   </header>
   <main>
     <!-- Buyer Section -->
@@ -33,63 +36,61 @@
         <select id="order-category" required>
           <option value="" disabled selected>Pilih kategori...</option>
         </select>
-
         <label for="product">Produk</label>
         <select id="product" required>
           <option value="" disabled selected>Pilih produk...</option>
         </select>
-
         <div id="label-server" class="hidden">
           <label for="server_id">Server ID</label>
-          <input id="server_id" type="text" placeholder="Server ID">
+          <input id="server_id" type="text" placeholder="Server ID" />
         </div>
-
         <label for="id_game">ID Game</label>
-        <input id="id_game" type="text" placeholder="Masukkan ID Game" required>
-
+        <input id="id_game" type="text" placeholder="Masukkan ID Game" required />
         <label for="buyer_name">Nama Pembeli</label>
-        <input id="buyer_name" type="text" placeholder="Nama Anda" required>
-
+        <input id="buyer_name" type="text" placeholder="Nama Anda" required />
         <div id="quantity-group" class="hidden">
           <label for="quantity">Jumlah</label>
-          <input id="quantity" type="number" value="1" min="1">
+          <input id="quantity" type="number" value="1" min="1" />
         </div>
-
         <label for="payment_method">Metode Pembayaran</label>
         <select id="payment_method" required>
           <option value="" disabled selected>Pilih metode...</option>
           <option value="cash">Cash (Kode Rahasia)</option>
           <option value="transfer">Transfer</option>
         </select>
-
         <div id="secret-group" class="hidden">
           <label for="secret">Kode Rahasia</label>
-          <input id="secret" type="text" placeholder="Masukkan kode rahasia">
+          <input id="secret" type="text" placeholder="Masukkan kode rahasia" />
         </div>
-
         <p id="total-price">Total: Rp 0</p>
         <button type="submit">Pesan Sekarang</button>
       </form>
     </section>
 
+    <!-- Toggle Produk List -->
+    <div>
+      <button id="toggle-products">Tampilkan / Sembunyikan Produk</button>
+    </div>
+    <!-- Produk List -->
+    <div id="produk-list" class="hidden"></div>
+
     <!-- Admin Section -->
     <section id="admin-section">
       <h2>Admin Panel</h2>
       <form id="login-form">
-        <label for="email">Email</label>
-        <input id="email" type="email" placeholder="Admin email" required>
+        <label for="email">Email Admin</label>
+        <input id="email" type="email" placeholder="Email" required />
         <label for="password">Password</label>
-        <input id="password" type="password" placeholder="Password" required>
+        <input id="password" type="password" placeholder="Password" required />
         <button type="submit">Login</button>
       </form>
-
       <div id="admin-panel" class="hidden">
         <button id="logout-btn">Logout</button>
         <h3>Tambah Produk</h3>
-        <label for="new-name">Nama</label>
-        <input id="new-name" type="text" placeholder="Nama produk">
+        <label for="new-name">Nama Produk</label>
+        <input id="new-name" type="text" placeholder="Nama produk" />
         <label for="new-price">Harga</label>
-        <input id="new-price" type="number" placeholder="Harga produk">
+        <input id="new-price" type="number" placeholder="Harga" />
         <label for="new-category">Kategori</label>
         <select id="new-category">
           <option value="Topup ML">Topup ML</option>
@@ -117,125 +118,117 @@
       'https://roiwwquzsyiwzifjvagc.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvaXd3cXV6c3lpd3ppZmp2YWdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNDI1MDksImV4cCI6MjA2MTgxODUwOX0.r55cFBttjq259Sved86qScdouQbCFUDeIJCFbwCDkeA'
     );
-
-    // DOM
-    const $ = id => document.getElementById(id);
     const cache = { products: [] };
+    const $ = id => document.getElementById(id);
 
-    // Init
-    window.addEventListener('DOMContentLoaded', async () => {
-      await loadProducts();
-      setupToggle();
-      setupCategory();
-      setupPaymentToggle();
-      setupOrderSubmit();
-      setupAuth();
+    window.addEventListener('DOMContentLoaded', () => {
+      loadProducts();
+      $('toggle-products').addEventListener('click', () => $('produk-list').classList.toggle('hidden'));
+      $('order-category').addEventListener('change', handleCategoryChange);
+      $('product').addEventListener('change', updateTotal);
+      $('quantity').addEventListener('input', updateTotal);
+      $('payment_method').addEventListener('change', e => $('secret-group').classList.toggle('hidden', e.target.value !== 'cash'));
+      $('order-form').addEventListener('submit', handleOrderSubmit);
+      supabase.auth.onAuthStateChange((_, session) => {
+        $('login-form').classList.toggle('hidden', !!session);
+        $('admin-panel').classList.toggle('hidden', !session);
+        if (session) loadAdminData();
+      });
+      $('login-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        await supabase.auth.signInWithPassword({ email: $('email').value, password: $('password').value });
+      });
+      $('logout-btn').addEventListener('click', async () => { await supabase.auth.signOut(); });
+      $('add-product-btn').addEventListener('click', async () => {
+        await supabase.from('products').insert([{ name: $('new-name').value, price: parseInt($('new-price').value), category: $('new-category').value }]);
+        loadAdminData(); loadProducts();
+      });
     });
 
-    // Load Products
     async function loadProducts() {
       const { data } = await supabase.from('products').select('*').order('category');
       cache.products = data;
-      renderCategoryOptions(data);
-      renderProductList(data);
-      renderProductOptions(data);
+      const categories = [...new Set(data.map(p => p.category))];
+      const selCat = $('order-category'); selCat.innerHTML = '<option disabled selected>Pilih kategori...</option>';
+      categories.forEach(c => selCat.add(new Option(c, c)));
+      $('produk-list').classList.add('hidden');
     }
 
-    // Render Category
-    function renderCategoryOptions(list) {
-      const sel = $('order-category'); sel.innerHTML = '<option disabled selected>Pilih kategori...</option>';
-      [...new Set(list.map(p=>p.category))].forEach(c=>sel.add(new Option(c,c)));
+    function handleCategoryChange(e) {
+      const sel = e.target.value;
+      const list = cache.products.filter(p => p.category === sel);
+      renderProdukList(list); renderProductOptions(list);
+      $('label-server').classList.toggle('hidden', !(sel === 'Topup ML' || sel === 'Topup PUBGM'));
+      $('server_id').parentElement.classList.toggle('hidden', !(sel === 'Topup ML' || sel === 'Topup PUBGM'));
+      $('quantity-group').classList.toggle('hidden', sel !== 'Joki MLBB');
+      $('produk-list').classList.remove('hidden');
     }
 
-    // Buyer: list & dropdown
-    function renderProductList(list) {
+    function renderProdukList(list) {
       const el = $('produk-list'); el.innerHTML = '';
-      list.forEach(p=>{
-        const div=document.createElement('div');
-        div.className='p-4 bg-gray-800 rounded shadow mb-4';
-        div.innerHTML=`<strong>${p.name}</strong><br>Rp ${p.price.toLocaleString()}`;
-        el.append(div);
+      list.forEach(p => {
+        const card = document.createElement('div'); card.className = 'card';
+        card.innerHTML = `<h3 class="text-white">${p.name}</h3><p class="text-gray-300">Rp ${p.price.toLocaleString()}</p>`;
+        el.appendChild(card);
       });
     }
+
     function renderProductOptions(list) {
-      const sel=$('product'); sel.innerHTML='<option disabled selected>Pilih produk...</option>';
-      list.forEach(p=>{ const o=new Option(p.name+' - Rp'+p.price,p.id); o.dataset.price=p.price; sel.add(o); });
+      const sel = $('product'); sel.innerHTML = '<option disabled selected>Pilih produk...</option>';
+      list.forEach(p => { const o = new Option(p.name + ' - Rp' + p.price, p.id); o.dataset.price = p.price; sel.add(o); });
     }
 
-    // Toggle show/hide list
-    function setupToggle() {
-      $('order-category').addEventListener('change', () => {
-        $('produk-list').classList.remove('hidden');
-      });
+    function updateTotal() {
+      const sel = $('product').selectedOptions[0];
+      const price = sel ? parseInt(sel.dataset.price) : 0;
+      const qty = parseInt($('quantity').value) || 1;
+      const total = price * qty;
+      $('total-price').textContent = `Total: Rp ${total.toLocaleString()}`;
     }
 
-    // Category change: server & qty
-    function setupCategory() {
-      $('order-category').onchange = e => {
-        const c=e.target.value;
-        const sub=cache.products.filter(p=>p.category===c);
-        renderProductList(sub); renderProductOptions(sub);
-        $('label-server').classList.toggle('hidden',!(c==='Topup ML'||c==='Topup PUBGM'));
-        $('quantity-group').classList.toggle('hidden',c!=='Joki MLBB');
+    async function handleOrderSubmit(e) {
+      e.preventDefault();
+      const sel = $('product').selectedOptions[0]; if (!sel) return alert('Pilih produk');
+      const payload = {
+        product_id: sel.value,
+        product_name: sel.text,
+        price: parseInt(sel.dataset.price) * (parseInt($('quantity').value) || 1),
+        quantity: parseInt($('quantity').value) || 1,
+        category: $('order-category').value,
+        game_id: $('id_game').value,
+        server_id: $('server_id').value,
+        buyer_name: $('buyer_name').value,
+        payment_method: $('payment_method').value
       };
-    }
-
-    // Payment toggle secret
-    function setupPaymentToggle() {
-      $('payment_method').onchange = e => {
-        $('secret-group').classList.toggle('hidden',e.target.value!=='cash');
-      };
-    }
-
-    // Order submit
-    function setupOrderSubmit() {
-      $('order-form').onsubmit = async e => {
-        e.preventDefault();
-        const c=$('order-category').value;
-        const prod=$('product').selectedOptions[0];
-        const q=parseInt($('quantity').value)||1;
-        const price=prod?parseInt(prod.dataset.price)*q:0;
-        if(!$('buyer_name').value||!prod) return alert('Lengkapi data');
-        if($('payment_method').value==='cash'){
-          const { data }=await supabase.from('secrets').select().eq('code',$('secret').value);
-          if(!data.length) return alert('Kode rahasia salah');
-        }
-        await supabase.from('orders').insert([{ product_id:prod.value, product_name:prod.text, price, quantity:q, category:c, game_id:$('id_game').value, server_id:$('server_id').value, buyer_name:$('buyer_name').value, payment_method:$('payment_method').value }]);
-        alert('Pesanan berhasil!');
-        if(c==='Joki MLBB'||$('payment_method').value==='transfer'){
-          const info=c.startsWith('Topup')?`Server ID: ${$('server_id').value}`:`ID: ${$('id_game').value}`;
-          window.open(`https://wa.me/6281335761181?text=${encodeURIComponent(`Halo Admin, saya ${$('buyer_name').value} pesan ${q}× ${prod.text} (${info})`)}`,'_blank');
-        }
-        e.target.reset(); $('produk-list').classList.add('hidden');
-      };
-    }
-
-    // Auth & Admin
-    function setupAuth() {
-      supabase.auth.onAuthStateChange((_, session)=>{
-        $('login-form').classList.toggle('hidden',!!session);
-        $('admin-panel').classList.toggle('hidden',!session);
-        if(session) loadAdminData();
-      });
-      $('login-form').onsubmit = async e => { e.preventDefault(); await supabase.auth.signInWithPassword({ email:$('email').value, password:$('password').value }); };
-      $('logout-btn').onclick = async()=>{ await supabase.auth.signOut(); document.location.reload(); };
+      if (payload.payment_method === 'cash') {
+        const { data } = await supabase.from('secrets').select().eq('code', $('secret').value);
+        if (!data.length) return alert('Kode rahasia salah');
+      }
+      await supabase.from('orders').insert([payload]);
+      alert('Pesanan berhasil!');
+      if (payload.category === 'Joki MLBB' || payload.payment_method === 'transfer') {
+        const info = payload.category.startsWith('Topup') ? `Server ID: ${payload.server_id}` : `ID: ${payload.game_id}`;
+        window.open(`https://wa.me/6281335761181?text=${encodeURIComponent(`Halo Admin, saya ${payload.buyer_name} pesan ${payload.quantity}× ${payload.product_name} (${info})`)}`,'_blank');
+      }
+      $('order-form').reset(); $('produk-list').classList.add('hidden');
     }
 
     async function loadAdminData() {
-      const { data:prods } = await supabase.from('products').select();
-      const el = $('admin-produk-list'); el.innerHTML='';
-      prods.forEach(p=>{
-        const d=document.createElement('div'); d.className='flex justify-between bg-gray-800 p-2 rounded mb-2';
-        d.innerHTML=`<span>${p.name} - Rp${p.price} (${p.category})</span><button class='bg-red-500 px-2' onclick="hapus('${p.id}')">Hapus</button>`;
-        el.append(d);
+      const { data: prods } = await supabase.from('products').select();
+      const el = $('admin-produk-list'); el.innerHTML = '';
+      prods.forEach(p => {
+        const row = document.createElement('div'); row.className = 'flex justify-between bg-gray-800 p-2 rounded mb-2';
+        row.innerHTML = `<span>${p.name} - Rp${p.price} (${p.category})</span><button class='bg-red-500 px-2' onclick="hapus('${p.id}')">Hapus</button>`;
+        el.appendChild(row);
       });
-      const { data:ord } = await supabase.from('orders').select();
-      $('orders-cash').innerHTML=''; $('orders-transfer').innerHTML='';
-      ord.forEach(o=>{ const li=document.createElement('li'); li.textContent=`${o.buyer_name} - Rp${o.price} [${o.payment_method}]`; (o.payment_method==='cash'?$('orders-cash'):$('orders-transfer')).append(li); });
+      const { data: ord } = await supabase.from('orders').select();
+      $('orders-cash').innerHTML = ''; $('orders-transfer').innerHTML = '';
+      ord.forEach(o => {
+        const li = document.createElement('li'); li.textContent = `${o.buyer_name} - Rp${o.price} [${o.payment_method}]`;
+        (o.payment_method === 'cash' ? $('orders-cash') : $('orders-transfer')).appendChild(li);
+      });
     }
-    window.hapus = async id=>{ await supabase.from('products').delete().eq('id',id); loadAdminData(); loadProducts(); };
+    window.hapus = async id => { await supabase.from('products').delete().eq('id', id); loadAdminData(); loadProducts(); };
   </script>
 </body>
 </html>
-
-
