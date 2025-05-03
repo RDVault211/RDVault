@@ -23,12 +23,14 @@
      <!-- Toggle & Category Filter -->
      <section>
        <button id="toggle-products">Tampilkan / Sembunyikan Produk</button>
-       <select id="filter-category">
-         <option value="all" selected>Semua Kategori</option>
-         <option value="Topup ML">Topup ML</option>
-         <option value="Topup FF">Topup FF</option>
-         <option value="Topup PUBGM">Topup PUBGM</option>
-         <option value="Joki MLBB">Joki MLBB</option>
+      <section id="products-section">
+    <h2>Filter Produk</h2>
+    <label for="category-filter">Pilih Kategori:</label>
+    <select id="category-filter">
+      <option value="all">Semua</option>
+    </select>
+    <div id="product-list" class="grid"></div>
+  </section>
        </select>
        <div id="current-category" class="hidden"></div>
        <div id="produk-list" class="hidden"></div>
