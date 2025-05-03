@@ -209,7 +209,7 @@ orderForm.onsubmit = async e => {
  * @param {string} method Metode pembayaran
  */
 async function sendWablasNotification(buyer, product, quantity, category, gameId, serverId, method) {
-  const API_KEY = 'XoV5NnZhzYf89bDBinbKXnM51dBjtl0JLqwTC70hOh4Wf31BwemepCz';
+  const API_KEY = '6IzDGXdC1YeDkGqIe7SZvOxtoxS98coCqZVKTwIMDDzQOhuVSLBJfwE';
   const PHONE  = '6281335761181';  // nomor WA admin
   const info   = category.startsWith('Topup') 
                    ? `Server ID: ${serverId}` 
