@@ -44,7 +44,7 @@ loginBtn.onclick = async () => {
   adminPanel.classList.remove('hidden');
   await initAdmin();
 };
-logoutBtn.onclick = logout2Btn.onclick = () => location.reload();
+logoutBtn.onclick 
 
 // Init Admin
 async function initAdmin() {
