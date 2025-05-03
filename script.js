@@ -214,3 +214,26 @@ orderForm.onsubmit = async e => {
 
 // Init
 window.addEventListener('DOMContentLoaded', loadProducts);
+
+// Kirim notifikasi WhatsApp via Wablas
+try {
+  const waResponse = await fetch('https://console.wablas.com/api/send-message', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'XoV5NnZhzYf89bDBinbKXnM51dBjtl0JLqwTC70hOh4Wf31BwemepCz'
+    },
+    body: JSON.stringify({
+      phone: '6281335761181',
+      message: `Pesanan baru:\n\nNama: ${buyer_name}\nProduk: ${quantity}x ${product_name}\nKategori: ${category}\nMetode: ${payment_method}\nID: ${game_id}${category === 'Topup ML' ? `\nServer ID: ${server_id}` : ''}`
+    })
+  });
+
+  const waResult = await waResponse.json();
+  if (!waResult.status) {
+    console.warn('Gagal kirim WA:', waResult);
+  }
+} catch (err) {
+  console.error('Error kirim WA:', err);
+}
+
