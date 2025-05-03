@@ -2,7 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 // ── Inisialisasi Supabase ────────────────────────
 const supabase = createClient(
-  'https://roiwwquzsyiwzifjvagc.supabase.co',
+  'https://uegbyvcdwxnbdohvtmqi.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…CFbwCDkeA'
 );
 
