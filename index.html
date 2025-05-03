@@ -10,15 +10,6 @@
   <h1 class="title">RDVault</h1>
 
   <!-- Filter & List Produk -->
-<!-- Tombol untuk show/hide -->
-<div class="container mx-auto px-4 mb-4">
-  <button id="toggle-products" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-    Tampilkan / Sembunyikan Produk
-  </button>
-</div>
-
-<!-- Daftar produk (hidden di awal) -->
-<div id="produk-list" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
   <section id="products-section">
     <h2>Filter Produk</h2>
@@ -26,7 +17,19 @@
     <select id="category-filter">
       <option value="all">Semua</option>
     </select>
- 
+ <!-- HTML -->
+<button id="toggle-products">Tampilkan / Sembunyikan Produk</button>
+<div id="produk-list" class="hidden">
+  <!-- kartu produk di-append lewat JS -->
+</div>
+
+<!-- Form pembayaran tetap visible -->
+<form id="order-form">
+  <select id="order-category">…</select>
+  <select id="product">…</select>
+  <!-- dll. -->
+</form>
+
 
   <!-- Form Pemesanan -->
   <section id="order-section">
