@@ -44,7 +44,7 @@ loginBtn.onclick = async () => {
   adminPanel.classList.remove('hidden');
   await initAdmin();
 };
-logoutBtn.onclick 
+logoutBtn.onclick = logout2Btn.onclick = () => location.reload();
 
 // Init Admin
 async function initAdmin() {
@@ -272,6 +272,5 @@ await sendWablasNotification(
 
 // Init
 window.addEventListener('DOMContentLoaded', loadProducts);
-
 
 
