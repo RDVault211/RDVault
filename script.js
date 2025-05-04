@@ -58,7 +58,7 @@ async function initAdmin() {
   supabase.channel('orders')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
       const o = payload.new;
-      alert(`📥 Pesanan baru dari ${o.buyer_name}: ${o.product_name}`);
+      alert(`📥 Pesanan baru dari ${o.buyer_name}: ${o.product_name}${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}${payment_method}`);
       loadOrders();
     })
     .subscribe();
@@ -188,83 +188,19 @@ orderForm.onsubmit = async e => {
     if (!valid) return alert('Kode rahasia salah.');
   }
 
-  const { error } = await supabase.from('orders').insert([{
-    product_id,
-    product_name,
-    price,
-    game_id,
-    server_id,
-    buyer_name,
-    payment_method,
-    category
-  }]);
-/**
- * Kirim notifikasi WA lewat Wablas
- * @param {string} buyer Nama pembeli
- * @param {string} product Nama produk
- * @param {number} quantity Jumlah
- * @param {string} category Kategori produk
- * @param {string} gameId ID game
- * @param {string} serverId Server ID (boleh kosong)
- * @param {string} method Metode pembayaran
- */
-async function sendWablasNotification(buyer, product, quantity, category, gameId, serverId, method) {
-  const API_KEY = '6IzDGXdC1YeDkGqIe7SZvOxtoxS98coCqZVKTwIMDDzQOhuVSLBJfwE';
-  const PHONE  = '6281335761181';  // nomor WA admin
-  const info   = category.startsWith('Topup') 
-                   ? `Server ID: ${serverId}` 
-                   : `ID Game: ${gameId}`;
-  const message = 
-    `📥 *Pesanan Baru* 📥\n\n` +
-    `• Nama: ${buyer}\n` +
-    `• Produk: ${quantity}× ${product}\n` +
-    `• Kategori: ${category}\n` +
-    `• ${info}\n` +
-    `• Metode: ${method}`;
-
-  try {
-    const res = await fetch('https://console.wablas.com/api/send-message', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': API_KEY
-      },
-      body: JSON.stringify({
-        phone: PHONE,
-        message,
-        priority: true,
-        secret: false
-      })
-    });
-    const json = await res.json();
-    if (!json.status) {
-      console.error('Wablas error:', json);
-    } else {
-      console.log('Notifikasi WA terkirim:', json);
-    }
-  } catch (err) {
-    console.error('Fetch Wablas gagal:', err);
-  }
-}
-
   if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
 
   alert('Pemesanan berhasil!');
   if (payment_method === 'transfer') {
-    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
+    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}${payment_method}`;
     const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
-// … setelah insert ke Supabase dan alert sukses …
-await sendWablasNotification(
-  buyer_name,
-  product_name,
-  quantity,
-  category,
-  game_id,
-  server_id,
-  payment_method
-);
+ if (payment_method === 'e-wallet') {
+    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}${payment_method}`;
+    const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
 
   orderForm.reset();
   totalPriceEl.textContent = '';
