@@ -116,7 +116,7 @@ function renderProductSelect(list) {
   });
   productSelect.onchange = () => {
     const harga = productSelect.selectedOptions[0]?.dataset.price;
-    totalPriceEl.textContent = harga ? `Total: Rp ${harga*quantity}` : '';
+    totalPriceEl.textContent = harga ? `Total: Rp ${harga}*${jumlah}` : '';
   };
 }
 
