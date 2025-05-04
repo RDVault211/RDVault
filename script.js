@@ -203,15 +203,11 @@ orderForm.onsubmit = async e => {
 
   alert('Pemesanan berhasil!');
   if (payment_method === 'transfer') {
-    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${payment_method} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
-    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
+    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
+    const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
-  if (payment_method === 'e-wallet') {
-    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${payment_method} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
-    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  }
+
   orderForm.reset();
   totalPriceEl.textContent = '';
 };
@@ -219,4 +215,24 @@ orderForm.onsubmit = async e => {
 // Init
 window.addEventListener('DOMContentLoaded', loadProducts);
 
+// Kirim notifikasi WhatsApp via Wablas
+try {
+  const waResponse = await fetch('https://console.wablas.com/api/send-message', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'XoV5NnZhzYf89bDBinbKXnM51dBjtl0JLqwTC70hOh4Wf31BwemepCz'
+    },
+    body: JSON.stringify({
+      phone: '6281335761181',
+      message: `Pesanan baru:\n\nNama: ${buyer_name}\nProduk: ${product_name}\nKategori: ${category}\nMetode: ${payment_method}\nID: ${game_id}${category === 'Topup ML' ? `\nServer ID: ${server_id}` : ''}`
+    })
+  });
 
+  const waResult = await waResponse.json();
+  if (!waResult.status) {
+    console.warn('Gagal kirim WA:', waResult);
+  }
+} catch (err) {
+  console.error('Error kirim WA:', err);
+}
