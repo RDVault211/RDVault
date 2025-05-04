@@ -18,6 +18,7 @@ const serverInput = document.getElementById('server_id');
 const buyerInput = document.getElementById('buyer_name');
 const payMethodSelect = document.getElementById('payment_method');
 const secretInput = document.getElementById('secret');
+const quantityInput = document.getElementById('quantity');
 
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
