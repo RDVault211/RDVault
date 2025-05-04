@@ -201,6 +201,18 @@ orderForm.onsubmit = async e => {
     const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
+  const { error } = await supabase.from('orders').insert([{
+    product_id,
+    product_name,
+    price,
+    game_id,
+    server_id,
+    buyer_name,
+    payment_method,
+    category
+  }]);
+
+  if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
 
   orderForm.reset();
   totalPriceEl.textContent = '';
