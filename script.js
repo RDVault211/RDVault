@@ -252,7 +252,7 @@ async function sendWablasNotification(buyer, product, quantity, category, gameId
   alert('Pemesanan berhasil!');
   if (payment_method === 'transfer') {
     const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
-    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
+    const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
 // … setelah insert ke Supabase dan alert sukses …
