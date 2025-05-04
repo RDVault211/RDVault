@@ -207,7 +207,11 @@ orderForm.onsubmit = async e => {
     const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   }
-
+ if (payment_method === 'e-wallet') {
+    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
+    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
   orderForm.reset();
   totalPriceEl.textContent = '';
 };
