@@ -58,7 +58,7 @@ async function initAdmin() {
   supabase.channel('orders')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, payload => {
       const o = payload.new;
-      alert(`📥 Pesanan baru dari ${o.buyer_name}: ${o.product_name}${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}${payment_method}`);
+      alert(`📥 Pesanan baru dari ${o.buyer_name}: ${o.product_name}`);
       loadOrders();
     })
     .subscribe();
@@ -188,19 +188,6 @@ orderForm.onsubmit = async e => {
     if (!valid) return alert('Kode rahasia salah.');
   }
 
-  if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
-
-  alert('Pemesanan berhasil!');
-  if (payment_method === 'transfer') {
-    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}${payment_method}`;
-    const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  }
- if (payment_method === 'e-wallet') {
-    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}${payment_method}`;
-    const url = `https://wa.me/6282334077373?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-  }
   const { error } = await supabase.from('orders').insert([{
     product_id,
     product_name,
@@ -214,6 +201,17 @@ orderForm.onsubmit = async e => {
 
   if (error) return alert('Gagal menyimpan pesanan: ' + error.message);
 
+  alert('Pemesanan berhasil!');
+  if (payment_method === 'transfer') {
+    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${payment_method} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
+    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
+  if (payment_method === 'e-wallet') {
+    const text = `Halo Admin, saya ${buyer_name} ingin memesan ${product_name} untuk ID: ${game_id} ${payment_method} ${category === 'Topup ML' ? 'Server ID: ' + server_id : ''}`;
+    const url = `https://wa.me/6281335761181?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
   orderForm.reset();
   totalPriceEl.textContent = '';
 };
