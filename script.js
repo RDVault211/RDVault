@@ -226,7 +226,7 @@ try {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'XoV5NnZhzYf89bDBinbKXnM51dBjtl0JLqwTC70hOh4Wf31BwemepCz'
+      'Authorization': '6IzDGXdC1YeDkGqIe7SZvOxtoxS98coCqZVKTwIMDDzQOhuVSLBJfwE'
     },
     body: JSON.stringify({
       phone: '6281335761181',
